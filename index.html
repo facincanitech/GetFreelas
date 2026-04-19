@@ -771,7 +771,7 @@ document.querySelectorAll('.modal-overlay').forEach(el =>
 loadSession();
 updateAuthUI();
 
-fetch('https://raw.githubusercontent.com/facincanitech/getfreelas-data/main/freelas.json')
+fetch('https://raw.githubusercontent.com/facincanitech/GetFreelas/main/data/freelas.json')
   .then(r => r.ok ? r.json() : Promise.reject())
   .then(data => {
     jobs = data.freelas || [];
