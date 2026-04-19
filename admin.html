@@ -761,8 +761,39 @@ function showIssueDetail(num) {
   const issue = allIssues.find(i => i.number === num);
   if (!issue) return;
   document.getElementById('dmTitle').textContent = issue.title;
-  document.getElementById('dmBody').innerHTML = `
-    <div class="modal-sec"><div class="modal-sec-title">Conteúdo</div><p style="white-space:pre-wrap">${issue.body || '(sem corpo)'}</p></div>
+
+  // Para cadastros locais (número >= 90000), mostra dados completos do user
+  let extraHtml = '';
+  if (num >= 90000) {
+    const users = JSON.parse(localStorage.getItem('gf_users')||'[]');
+    const u = users[num - 90000];
+    if (u && u.type === 'empresa') {
+      extraHtml = `
+        <div class="modal-sec">
+          <div class="modal-sec-title">Dados da Empresa</div>
+          <table style="width:100%;font-size:13px;border-collapse:collapse">
+            ${[
+              ['Razão Social', u.name],
+              ['CNPJ',         u.cnpj],
+              ['Email',        u.email],
+              ['Telefone',     u.tel],
+              ['Endereço',     u.endereco],
+              ['Cidade',       u.cidade],
+              ['Estado',       u.estado],
+              ['Área',         u.area],
+              ['Cadastro',     new Date(u.createdAt).toLocaleString('pt-BR')],
+              ['Status',       u.status],
+            ].map(([k,v]) => v ? `<tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:8px 0;font-weight:600;color:var(--muted);width:40%">${k}</td>
+              <td style="padding:8px 0">${v}</td>
+            </tr>` : '').join('')}
+          </table>
+        </div>`;
+    }
+  }
+
+  document.getElementById('dmBody').innerHTML = extraHtml + `
+    ${!extraHtml ? `<div class="modal-sec"><div class="modal-sec-title">Conteúdo</div><p style="white-space:pre-wrap">${issue.body || '(sem corpo)'}</p></div>` : ''}
     <div class="modal-sec"><div class="modal-sec-title">Labels</div><p>${(issue.labels||[]).map(l=>`<span class="pill pill-new">${l.name}</span>`).join(' ')}</p></div>
     <div class="modal-sec"><div class="modal-sec-title">Aberto em</div><p>${new Date(issue.created_at).toLocaleString('pt-BR')}</p></div>
   `;

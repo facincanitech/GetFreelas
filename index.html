@@ -256,8 +256,7 @@
   <div class="stats-inner">
     <div class="stat"><div class="stat-icon" style="background:#eff6fc">📋</div><div><div class="stat-num" id="sVagas">0</div><div class="stat-desc">vagas ativas</div></div></div>
     <div class="stat"><div class="stat-icon" style="background:#f3ecf8">👥</div><div><div class="stat-num" id="sUsuarios">—</div><div class="stat-desc">profissionais</div></div></div>
-    <div class="stat"><div class="stat-icon" style="background:#dff6dd">🆕</div><div><div class="stat-num" id="sHoje">0</div><div class="stat-desc">postadas hoje</div></div></div>
-    <div class="stat"><div class="stat-icon" style="background:#fde7e9">🌍</div><div><div class="stat-num" id="sFontes">4</div><div class="stat-desc">fontes ativas</div></div></div>
+    <div class="stat"><div class="stat-icon" style="background:#dff6dd">🆕</div><div><div class="stat-num" id="sHoje">0</div><div class="stat-desc">novas hoje</div></div></div>
   </div>
 </div>
 
@@ -369,10 +368,10 @@
 
 <!-- ==================== MODAL: EMPRESA ==================== -->
 <div class="modal-overlay" id="empresaModal">
-  <div class="modal modal-sm">
+  <div class="modal" style="max-width:560px">
     <button class="modal-close" onclick="closeModal('empresaModal')">✕</button>
     <div style="font-size:22px;font-weight:700;margin-bottom:6px">Cadastrar Empresa</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Após análise você receberá o <strong>selo verificado</strong> e poderá publicar vagas.</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Preencha seus dados. Após análise entraremos em contato para ativar sua conta e você poderá publicar vagas.</div>
 
     <div class="alert" id="empresaAlert"></div>
 
@@ -380,9 +379,38 @@
       <label class="form-label">Razão Social *</label>
       <input class="form-input" type="text" id="eNome" placeholder="Nome da empresa">
     </div>
+    <div class="form-2">
+      <div class="form-row" style="margin:0">
+        <label class="form-label">CNPJ *</label>
+        <input class="form-input" type="text" id="eCnpj" placeholder="00.000.000/0000-00">
+      </div>
+      <div class="form-row" style="margin:0">
+        <label class="form-label">Área de atuação</label>
+        <select class="form-select" id="eArea">
+          <option value="tech">Tecnologia</option>
+          <option value="design">Design / Marketing</option>
+          <option value="eventos">Eventos</option>
+          <option value="delivery">Logística / Delivery</option>
+          <option value="admin">Administrativo</option>
+          <option value="obra">Construção / Obra</option>
+          <option value="audio">Áudio / Vídeo</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+    </div>
     <div class="form-row">
-      <label class="form-label">CNPJ *</label>
-      <input class="form-input" type="text" id="eCnpj" placeholder="00.000.000/0000-00">
+      <label class="form-label">Endereço *</label>
+      <input class="form-input" type="text" id="eEndereco" placeholder="Rua, número, bairro">
+    </div>
+    <div class="form-2">
+      <div class="form-row" style="margin:0">
+        <label class="form-label">Cidade *</label>
+        <input class="form-input" type="text" id="eCidade" placeholder="Cidade">
+      </div>
+      <div class="form-row" style="margin:0">
+        <label class="form-label">Estado *</label>
+        <input class="form-input" type="text" id="eEstado" placeholder="SP">
+      </div>
     </div>
     <div class="form-row">
       <label class="form-label">Email corporativo *</label>
@@ -394,46 +422,11 @@
     </div>
     <div class="form-row">
       <label class="form-label">Senha *</label>
-      <input class="form-input" type="password" id="eSenha" placeholder="Para acessar o painel">
+      <input class="form-input" type="password" id="eSenha" placeholder="Para acessar sua conta">
     </div>
-    <div class="form-row">
-      <label class="form-label">Área de atuação</label>
-      <select class="form-select" id="eArea">
-        <option value="tech">Tecnologia</option>
-        <option value="design">Design / Marketing</option>
-        <option value="eventos">Eventos</option>
-        <option value="delivery">Logística / Delivery</option>
-        <option value="admin">Administrativo</option>
-        <option value="obra">Construção / Obra</option>
-        <option value="audio">Áudio / Vídeo</option>
-        <option value="outro">Outro</option>
-      </select>
+    <div style="background:#eff6fc;border:1px solid #c7e0f4;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--accent);margin-bottom:16px">
+      Após o cadastro, entre em contato com <strong>facincanitech@gmail.com</strong> para negociar e ativar sua conta.
     </div>
-    <div class="form-row">
-      <label class="form-label">Escolha seu plano</label>
-      <div class="plans-grid">
-        <div class="plan-opt active" id="planFree" onclick="choosePlan('free')">
-          <div class="plan-name">Grátis</div>
-          <div class="plan-price">R$ 0</div>
-          <div class="plan-period">/mês</div>
-          <div class="plan-feat">1 vaga/mês<br>Sem destaque</div>
-        </div>
-        <div class="plan-opt popular" id="planPro" onclick="choosePlan('pro')">
-          <div class="plan-name">Pro</div>
-          <div class="plan-price">R$ 49</div>
-          <div class="plan-period">/mês</div>
-          <div class="plan-feat">10 vagas/mês<br>Vagas em destaque</div>
-        </div>
-        <div class="plan-opt" id="planBusiness" onclick="choosePlan('business')">
-          <div class="plan-name">Business</div>
-          <div class="plan-price">R$ 99</div>
-          <div class="plan-period">/mês</div>
-          <div class="plan-feat">Ilimitado<br>Destaque premium</div>
-        </div>
-      </div>
-      <input type="hidden" id="ePlano" value="free">
-    </div>
-    <div class="form-hint" style="margin-bottom:16px">⏳ Cadastro passa por verificação manual. Você será notificado pelo email fornecido.</div>
     <button class="modal-apply" onclick="doEmpresaRegister()">Enviar cadastro →</button>
     <button class="modal-apply secondary" style="margin-top:8px" onclick="closeModal('empresaModal');openAuth('login')">Já tenho cadastro — Entrar</button>
   </div>
@@ -462,17 +455,22 @@
   </div>
 </div>
 
-<!-- ==================== MODAL: PAGAMENTO ==================== -->
+<!-- ==================== MODAL: CADASTRO OK ==================== -->
 <div class="modal-overlay" id="paymentModal">
   <div class="modal modal-sm">
     <button class="modal-close" onclick="closeModal('paymentModal')">✕</button>
-    <div style="font-size:22px;font-weight:700;margin-bottom:6px">Finalizar pagamento</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Cadastro enviado! Realize o pagamento abaixo para ativar seu plano.</div>
-    <div id="paymentDetails"></div>
-    <div style="margin-top:16px;padding:12px 14px;background:#fff4ce;border:1px solid #f0d060;border-radius:8px;font-size:12px;color:#8a6914">
-      Após o pagamento, envie o comprovante para <strong>pezzarine@gmail.com</strong> com o assunto <strong>[GetFreelas] Pagamento</strong>. Ativação em até 24h úteis.
+    <div style="text-align:center;padding:8px 0 20px">
+      <div style="font-size:40px;margin-bottom:12px">✅</div>
+      <div style="font-size:22px;font-weight:700;margin-bottom:8px">Cadastro enviado!</div>
+      <div style="font-size:14px;color:var(--muted);line-height:1.65">Seus dados foram registrados com sucesso.<br>Agora entre em contato para negociar e ativar sua conta.</div>
     </div>
-    <button class="modal-apply" style="margin-top:16px" onclick="closeModal('paymentModal')">Entendi, enviarei o comprovante →</button>
+    <div style="background:#eff6fc;border:1px solid #c7e0f4;border-radius:10px;padding:16px;text-align:center;margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Entre em contato pelo email</div>
+      <div style="font-size:16px;font-weight:700;color:var(--accent)">facincanitech@gmail.com</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Assunto: <strong>Ativação GetFreelas — [Nome da empresa]</strong></div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:16px">Após a negociação, sua conta será ativada em até 24h úteis e você poderá publicar vagas.</div>
+    <button class="modal-apply" onclick="closeModal('paymentModal')">Entendido →</button>
   </div>
 </div>
 
@@ -480,8 +478,8 @@
 // =====================================================
 // CONFIG — substitua com seus dados antes do deploy
 // =====================================================
-const ADMIN_EMAIL = 'pezzarine@gmail.com';
-const PIX_KEY     = 'pezzarine@gmail.com'; // chave Pix para pagamentos // email que recebe notificações de cadastro
+const ADMIN_EMAIL   = 'pezzarine@gmail.com';
+const CONTACT_EMAIL = 'facincanitech@gmail.com';
 
 // =====================================================
 // STATE
@@ -586,44 +584,32 @@ async function doRegister() {
 }
 
 async function doEmpresaRegister() {
-  const nome  = document.getElementById('eNome').value.trim();
-  const cnpj  = document.getElementById('eCnpj').value.trim();
-  const email = document.getElementById('eEmail').value.trim().toLowerCase();
-  const tel   = document.getElementById('eTel').value.trim();
-  const senha = document.getElementById('eSenha').value;
-  const area  = document.getElementById('eArea').value;
-  const plano = document.getElementById('ePlano').value;
-  if (!nome || !cnpj || !email || !tel || !senha) return showAlert('empresaAlert','error','Preencha todos os campos obrigatórios.');
+  const nome     = document.getElementById('eNome').value.trim();
+  const cnpj     = document.getElementById('eCnpj').value.trim();
+  const email    = document.getElementById('eEmail').value.trim().toLowerCase();
+  const tel      = document.getElementById('eTel').value.trim();
+  const senha    = document.getElementById('eSenha').value;
+  const area     = document.getElementById('eArea').value;
+  const endereco = document.getElementById('eEndereco').value.trim();
+  const cidade   = document.getElementById('eCidade').value.trim();
+  const estado   = document.getElementById('eEstado').value.trim();
+  if (!nome || !cnpj || !email || !tel || !senha || !endereco || !cidade || !estado)
+    return showAlert('empresaAlert','error','Preencha todos os campos obrigatórios.');
   const users = getUsers();
   if (users.find(u => u.email === email)) return showAlert('empresaAlert','error','Email já cadastrado.');
   const hash = await hashPw(senha);
-  const planStatus = plano === 'free' ? 'ativo' : 'aguardando_pagamento';
-  const user = { name: nome, email, hash, type: 'empresa', status: 'pendente', cnpj, tel, area, plano, planStatus, createdAt: new Date().toISOString() };
+  const user = { name: nome, email, hash, type: 'empresa', status: 'pendente', cnpj, tel, area, endereco, cidade, estado, createdAt: new Date().toISOString() };
   users.push(user);
   saveUsers(users);
   saveSession(user);
-  const planNames = { free: 'Grátis', pro: 'Pro (R$ 49/mês)', business: 'Business (R$ 99/mês)' };
   notifyAdmin(
     `Nova empresa para verificar: ${nome}`,
-    `Razão Social: ${nome}\nCNPJ: ${cnpj}\nEmail: ${email}\nTelefone: ${tel}\nÁrea: ${area}\nPlano: ${planNames[plano]||plano}\nData: ${new Date().toLocaleString('pt-BR')}\n\nAbra o admin.html para verificar.`
+    `Razão Social: ${nome}\nCNPJ: ${cnpj}\nEmail: ${email}\nTelefone: ${tel}\nÁrea: ${area}\nEndereço: ${endereco}, ${cidade} - ${estado}\nData: ${new Date().toLocaleString('pt-BR')}\n\nAbra o admin.html para verificar.`
   );
   closeModal('empresaModal');
   updateAuthUI();
   render();
-  // Se plano pago, exibe modal de pagamento
-  if (plano !== 'free') {
-    const prices = { pro: { val: 'R$ 49', desc: '10 vagas/mês + destaque' }, business: { val: 'R$ 99', desc: 'Vagas ilimitadas + destaque premium' } };
-    const p = prices[plano];
-    document.getElementById('paymentDetails').innerHTML = `
-      <div style="background:#eff6fc;border:1px solid #c7e0f4;border-radius:10px;padding:16px;margin-bottom:14px;text-align:center">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Plano selecionado</div>
-        <div style="font-size:20px;font-weight:700;color:var(--accent)">${p.val}/mês</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">${p.desc}</div>
-      </div>
-      <div style="margin-bottom:10px"><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Pix</div>
-      <div style="background:#f5f5f7;border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-family:monospace;font-size:13px;word-break:break-all">${PIX_KEY}</div></div>`;
-    document.getElementById('paymentModal').classList.add('open');
-  }
+  document.getElementById('paymentModal').classList.add('open');
 }
 
 function logout() {
@@ -696,12 +682,6 @@ function switchAuthTab(tab) {
   document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
   document.getElementById('tabLogin').classList.toggle('active',    tab === 'login');
   document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
-}
-
-function choosePlan(plan) {
-  ['Free','Pro','Business'].forEach(p => document.getElementById('plan'+p).classList.remove('active'));
-  document.getElementById('plan' + plan.charAt(0).toUpperCase() + plan.slice(1)).classList.add('active');
-  document.getElementById('ePlano').value = plan;
 }
 
 function switchToEmpresa() {
