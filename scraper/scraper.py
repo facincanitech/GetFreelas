@@ -59,6 +59,35 @@ def fetch_json(url, headers=None, data=None, method="GET"):
 def strip_html(text):
     return re.sub(r"<[^>]+>", " ", text or "").strip()
 
+_BR = ['brasil','brazil','sao paulo','são paulo','rio de janeiro','curitiba','belo horizonte',
+       'porto alegre','florianopolis','florianópolis','salvador','brasilia','brasília',
+       'fortaleza','recife','manaus','goiania','goiânia','campinas','r$ ','brl']
+_US = ['united states','usa',' us ','new york','los angeles','san francisco','chicago',
+       'miami','seattle','boston','austin','texas','california','silicon valley','usd']
+_CA = ['canada','toronto','vancouver','montreal','calgary','ottawa','edmonton']
+_EU = ['europe','uk ','london','paris','berlin','amsterdam','lisbon','madrid','rome',
+       'dublin','germany','france','spain','italy','netherlands','ireland','eur ']
+_CN = ['china','shanghai','beijing','shenzhen','guangzhou','chengdu','hong kong']
+_AU = ['australia','sydney','melbourne','brisbane','perth','adelaide']
+
+def detect_country(location=''):
+    loc = (location or '').lower().strip()
+    if not loc or loc in ('worldwide','global','anywhere','remote','remoto',''):
+        return 'global'
+    for kw in _BR:
+        if kw in loc: return 'BR'
+    for kw in _US:
+        if kw in loc: return 'US'
+    for kw in _CA:
+        if kw in loc: return 'CA'
+    for kw in _EU:
+        if kw in loc: return 'EU'
+    for kw in _CN:
+        if kw in loc: return 'CN'
+    for kw in _AU:
+        if kw in loc: return 'AU'
+    return 'global'
+
 def ago(date_val):
     try:
         if isinstance(date_val, (int, float)):
@@ -157,6 +186,7 @@ def fetch_remoteok():
                 "payPeriod": "ano",
                 "tags":      [t for t in tags[:5] if t],
                 "location":  "Remoto",
+                "country":   "US",
                 "urgency":   urgency(date_val),
                 "avatar":    avatar(item.get("company","")),
                 "posted":    ago(date_val),
@@ -198,6 +228,7 @@ def fetch_remotive():
                 "payPeriod": "combinado",
                 "tags":      [t for t in tags[:5] if t],
                 "location":  "Remoto",
+                "country":   detect_country(location),
                 "urgency":   urgency(date_val),
                 "avatar":    avatar(item.get("company_name","")),
                 "posted":    ago(date_val),
@@ -270,6 +301,7 @@ def fetch_jooble():
                         "payPeriod": "combinado",
                         "tags":      tags,
                         "location":  item.get("location", "Remoto") or "Remoto",
+                        "country":   detect_country(item.get("location", "")),
                         "urgency":   urgency(date_val),
                         "avatar":    avatar(company),
                         "posted":    ago(date_val),
@@ -327,6 +359,7 @@ def fetch_adzuna():
                         "payPeriod": "combinado",
                         "tags":      tags[:5],
                         "location":  item.get("location", {}).get("display_name", "Remoto") or "Remoto",
+                        "country":   "BR" if country == "br" else "US" if country == "us" else "EU" if country == "gb" else "global",
                         "urgency":   urgency(date_val),
                         "avatar":    avatar(company),
                         "posted":    ago(date_val),
@@ -389,6 +422,7 @@ def fetch_freelancer():
                         "payPeriod": "projeto",
                         "tags":      tags,
                         "location":  "Remoto",
+                        "country":   "BR" if "languages[]=pt" in url else "global",
                         "urgency":   urgency(date_val),
                         "avatar":    avatar("Freelancer"),
                         "posted":    ago(date_val),
