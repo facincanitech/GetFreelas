@@ -234,7 +234,8 @@
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="Buscar vaga, habilidade..." oninput="render()">
         <select id="countryFilter" onchange="onCountryChange()" style="border:none;border-left:1px solid var(--border);padding:0 10px;font-family:inherit;font-size:13px;color:var(--muted);cursor:pointer;background:#fafafa;outline:none;max-width:130px">
-          <option value="">🌍 País</option>
+          <option value="">🌍 Qualquer lugar</option>
+          <option value="global">🌐 Global / Remoto</option>
           <option value="BR">🇧🇷 Brasil</option>
           <option value="US">🇺🇸 EUA</option>
           <option value="CA">🇨🇦 Canadá</option>
@@ -502,22 +503,7 @@ const STATES = {
   CN: ['Xangai','Pequim','Shenzhen','Guangzhou','Chengdu','Hangzhou','Wuhan','Chongqing'],
   AU: ['Sydney','Melbourne','Brisbane','Perth','Adelaide','Canberra','Gold Coast','Hobart'],
 };
-// Keywords buscados no texto completo da vaga (title+desc+details+company+location)
-// Vagas das fontes: RemoteOK e Remotive = globais/EUA; Freelancer PT = Brasil; Jooble varia
-const COUNTRY_KEYWORDS = {
-  BR: ['brasil','brazil','freelancer.com · pt','jooble · brasil','jooble · bras',
-       'são paulo','rio de janeiro','belo horizonte','curitiba','porto alegre',
-       'florianópolis','salvador','brasília','recife','fortaleza','português','reais','r$'],
-  US: ['remoteok','remotive','united states',' usa ','new york','los angeles',
-       'san francisco','chicago','miami','seattle','austin','boston','silicon valley',
-       'jooble · united','dollar','usd','· us\n'],
-  CA: ['canada','toronto','vancouver','montreal','calgary','ottawa','edmonton','cad'],
-  EU: ['europe','europa','london','paris','berlin','amsterdam','lisbon','madrid',
-       'rome','dublin','portugal','españa','france','germany','italia','netherlands',
-       'uk ','· gb','euro ','eur '],
-  CN: ['china','shanghai','beijing','shenzhen','guangzhou','chengdu','hong kong','cny'],
-  AU: ['australia','sydney','melbourne','brisbane','perth','adelaide','aud'],
-};
+// country field is set by scraper: 'BR','US','CA','EU','CN','AU','global'
 
 function onCountryChange() {
   const country = document.getElementById('countryFilter').value;
@@ -721,14 +707,10 @@ function render() {
     j.tags.some(t => t.toLowerCase().includes(s))
   );
   if (country) {
-    const kws = COUNTRY_KEYWORDS[country] || [];
     list = list.filter(j => {
-      // Busca no texto completo: location + details + desc + company + tags
-      const text = [
-        j.location || '', j.details || '', j.desc || '',
-        j.company || '', (j.tags || []).join(' ')
-      ].join(' ').toLowerCase();
-      return kws.some(k => text.includes(k));
+      const jc = j.country || 'global';
+      if (country === 'global') return jc === 'global';
+      return jc === country;
     });
   }
   if (state) {
