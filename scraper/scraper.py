@@ -322,7 +322,7 @@ def push_to_github(payload):
     if not GH_TOKEN or GH_TOKEN == "SEU_TOKEN_AQUI":
         print("⚠  Token GitHub não configurado — JSON salvo só localmente.")
         return False
-    path    = "freelas.json"
+    path    = "data/freelas.json"
     content = base64.b64encode(
         json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8")
     ).decode()
