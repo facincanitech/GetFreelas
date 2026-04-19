@@ -241,7 +241,7 @@
     <div class="stat"><div class="stat-icon" style="background:#eff6fc">📋</div><div><div class="stat-num" id="sVagas">0</div><div class="stat-desc">vagas ativas</div></div></div>
     <div class="stat"><div class="stat-icon" style="background:#f3ecf8">👥</div><div><div class="stat-num" id="sUsuarios">—</div><div class="stat-desc">profissionais</div></div></div>
     <div class="stat"><div class="stat-icon" style="background:#dff6dd">🆕</div><div><div class="stat-num" id="sHoje">0</div><div class="stat-desc">postadas hoje</div></div></div>
-    <div class="stat"><div class="stat-icon" style="background:#fde7e9">⚡</div><div><div class="stat-num">4.2h</div><div class="stat-desc">média p/ contato</div></div></div>
+    <div class="stat"><div class="stat-icon" style="background:#fde7e9">🌍</div><div><div class="stat-num" id="sFontes">2</div><div class="stat-desc">fontes ativas</div></div></div>
   </div>
 </div>
 
@@ -774,9 +774,10 @@ updateAuthUI();
 fetch('https://raw.githubusercontent.com/facincanitech/getfreelas-data/main/freelas.json')
   .then(r => r.ok ? r.json() : Promise.reject())
   .then(data => {
-    if (data.freelas && data.freelas.length) {
-      jobs = data.freelas;
-    }
+    jobs = data.freelas || [];
+    // "postadas hoje" = vagas com urgency hot/new (recentes)
+    const hoje = jobs.filter(j => j.urgency === 'hot' || j.urgency === 'new').length;
+    document.getElementById('sHoje').textContent = hoje || '0';
     render();
   })
   .catch(() => {
@@ -789,13 +790,8 @@ fetch('https://raw.githubusercontent.com/facincanitech/getfreelas-data/main/free
 // =====================================================
 try {
   const users = JSON.parse(localStorage.getItem('gf_users')||'[]');
-  document.getElementById('sUsuarios').textContent = 24 + users.filter(u => u.type === 'user').length;
-  
-  const todayCount = localPosts.filter(p => {
-    const d = new Date(p.id);
-    return d.toDateString() === new Date().toDateString();
-  }).length;
-  document.getElementById('sHoje').textContent = todayCount > 0 ? todayCount : "3"; // 3 mock se vazio
+  const profCount = users.filter(u => u.type === 'user').length;
+  document.getElementById('sUsuarios').textContent = profCount || '—';
 } catch(e) {}
 
 loadSession();
