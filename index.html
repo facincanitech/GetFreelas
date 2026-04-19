@@ -426,8 +426,7 @@
 // =====================================================
 // CONFIG — substitua com seus dados antes do deploy
 // =====================================================
-const GH_TOKEN  = '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';
-const GH_REPO   = 'facincanitech/getfreelas-data';
+const ADMIN_EMAIL = 'pezzarine@gmail.com'; // email que recebe notificações de cadastro
 
 // =====================================================
 // DEMO DATA
@@ -546,8 +545,7 @@ async function doRegister() {
   users.push(user);
   saveUsers(users);
   saveSession(user);
-  // Notifica o painel via GitHub Issue (silencioso, não bloqueia)
-  createIssue(`👤 Novo usuário: ${name}`, `**Nome:** ${name}\n**Email:** ${email}\n**Data:** ${new Date().toLocaleString('pt-BR')}`, ['usuario']).catch(()=>{});
+  notifyAdmin(`Novo usuário: ${name}`, `Nome: ${name}\nEmail: ${email}\nData: ${new Date().toLocaleString('pt-BR')}`);
   closeModal('authModal');
   updateAuthUI();
   render();
@@ -568,12 +566,10 @@ async function doEmpresaRegister() {
   users.push(user);
   saveUsers(users);
   saveSession(user);
-  // Abre Issue no repo privado para verificação manual
-  createIssue(
-    `🏢 Nova empresa: ${nome}`,
-    `**Razão Social:** ${nome}\n**CNPJ:** ${cnpj}\n**Email:** ${email}\n**Telefone:** ${tel}\n**Área:** ${area}\n**Data:** ${new Date().toLocaleString('pt-BR')}\n\n_Verifique e adicione o selo no admin.html_`,
-    ['empresa','pendente']
-  ).catch(()=>{});
+  notifyAdmin(
+    `Nova empresa para verificar: ${nome}`,
+    `Razão Social: ${nome}\nCNPJ: ${cnpj}\nEmail: ${email}\nTelefone: ${tel}\nÁrea: ${area}\nData: ${new Date().toLocaleString('pt-BR')}\n\nAbra o admin.html para verificar.`
+  );
   closeModal('empresaModal');
   updateAuthUI();
   render();
@@ -587,15 +583,15 @@ function logout() {
 }
 
 // =====================================================
-// GITHUB ISSUES API
+// NOTIFICAÇÃO — abre mailto silencioso em background
 // =====================================================
-async function createIssue(title, body, labels) {
-  if (!GH_TOKEN || GH_TOKEN === 'SEU_TOKEN_AQUI') return; // modo demo
-  return fetch(`https://api.github.com/repos/${GH_REPO}/issues`, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${GH_TOKEN}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github+json' },
-    body: JSON.stringify({ title, body, labels })
-  });
+function notifyAdmin(subject, body) {
+  const a = document.createElement('a');
+  a.href = `mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent('[GetFreelas] ' + subject)}&body=${encodeURIComponent(body)}`;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => a.remove(), 1000);
 }
 
 // =====================================================
@@ -811,13 +807,25 @@ document.querySelectorAll('.modal-overlay').forEach(el =>
 );
 
 // =====================================================
-// INIT
+// INIT — carrega vagas do JSON, fallback pro DB demo
 // =====================================================
 loadSession();
 updateAuthUI();
-render();
 
-// Atualiza contador de usuários (visual apenas)
+fetch('https://raw.githubusercontent.com/facincanitech/getfreelas-data/main/freelas.json')
+  .then(r => r.ok ? r.json() : Promise.reject())
+  .then(data => {
+    if (data.freelas && data.freelas.length) {
+      jobs = data.freelas;
+    }
+    render();
+  })
+  .catch(() => {
+    // fallback offline: usa DB hardcoded
+    jobs = [...DB];
+    render();
+  });
+
 const users = getUsers();
 document.getElementById('sUsuarios').textContent = users.length || '—';
 </script>

@@ -182,7 +182,7 @@
     <button class="tab active" id="tabEmpresas" onclick="openTab('empresas')">🏢 Empresas <span class="tab-count" id="tcEmpresas">0</span></button>
     <button class="tab" id="tabVagas" onclick="openTab('vagas')">📋 Vagas pendentes <span class="tab-count alert" id="tcVagas">0</span></button>
     <button class="tab" id="tabUsuarios" onclick="openTab('usuarios')">👤 Usuários <span class="tab-count" id="tcUsuarios">0</span></button>
-    <button class="tab" id="tabPush" onclick="openTab('push')">🚀 Publicar</button>
+    <button class="tab" id="tabPush" onclick="openTab('push');loadRemoteJSON()">🚀 Publicar</button>
     <button class="tab" id="tabConfig" onclick="openTab('config')">⚙ Config</button>
   </div>
 
@@ -225,6 +225,7 @@
       <div class="push-title">🚀 Publicar vagas aprovadas no GitHub Pages</div>
       <div class="push-sub">As vagas aprovadas aqui serão incluídas no freelas.json e publicadas.</div>
       <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="btn btn-ghost" onclick="loadRemoteJSON()">↺ Carregar atual</button>
         <button class="btn btn-primary" onclick="generateJSON()">Gerar freelas.json</button>
         <button class="btn btn-success" onclick="pushToGitHub()">⬆ Push para GitHub</button>
         <button class="btn btn-ghost btn-sm" onclick="downloadJSON()">⬇ Baixar JSON</button>
@@ -295,8 +296,19 @@
 // =====================================================
 const CFG_KEY = 'gf_admin_cfg';
 
+const DEFAULTS = {
+  token:    '',
+  repo:     'facincanitech/getfreelas-data',
+  siteRepo: 'facincanitech/getfreelas-data',
+  branch:   'main',
+  adminPass: 'admin123'
+};
+
 function getCfg() {
-  try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; } catch(e) { return {}; }
+  try {
+    const saved = JSON.parse(localStorage.getItem(CFG_KEY)) || {};
+    return { ...DEFAULTS, ...saved };
+  } catch(e) { return { ...DEFAULTS }; }
 }
 function saveCfg(obj) { localStorage.setItem(CFG_KEY, JSON.stringify(obj)); }
 
@@ -639,23 +651,36 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 // =====================================================
 // PUSH / PUBLISH
 // =====================================================
-const DEMO_JOBS = [
-  {id:1,title:"Desenvolvedor React para Landing Page",company:"Agência Fuse",category:"tech",type:"freela",desc:"Preciso de um dev React para criar uma landing page responsiva.",req:"Experiência com React e Tailwind.",details:"Prazo de 5 dias.",contact:"vagas@agenciafuse.com.br",pay:"R$ 800",payNum:800,payPeriod:"projeto",tags:["React","Figma","Tailwind"],location:"Remoto",urgency:"new",avatar:0,posted:"há 2h"},
-  {id:2,title:"Designer de Identidade Visual",company:"StartupX",category:"design",type:"freela",desc:"Startup busca designer para logo e guia de marca.",req:"Portfólio de identidades visuais.",details:"Entrega em 10 dias.",contact:"hello@startupx.io",pay:"R$ 1.200",payNum:1200,payPeriod:"projeto",tags:["Design","Branding"],location:"Remoto",urgency:"normal",avatar:1,posted:"há 5h"}
-];
+let currentRemoteJobs = null; // cache do JSON atual do GitHub
+
+async function loadRemoteJSON() {
+  const c = getCfg();
+  const status = document.getElementById('pushStatus');
+  status.textContent = 'Carregando freelas.json atual do GitHub...';
+  try {
+    const file = await ghFetch(`/repos/${c.siteRepo}/contents/data/freelas.json?ref=${c.branch||'main'}`);
+    const decoded = decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))));
+    currentRemoteJobs = JSON.parse(decoded).freelas || [];
+    status.textContent = `✓ ${currentRemoteJobs.length} vagas carregadas do GitHub.\nAprovadas localmente: ${approvedJobs.length}.\nClique em "Gerar freelas.json" para montar o JSON final.`;
+    status.className = 'push-status ok';
+  } catch(e) {
+    currentRemoteJobs = [];
+    status.textContent = `Arquivo ainda não existe no GitHub ou erro ao carregar.\nSerá criado do zero com as vagas aprovadas.\n\nErro: ${e.message}`;
+    status.className = 'push-status';
+  }
+}
 
 function generateJSON() {
-  const merged = [...DEMO_JOBS];
+  const base = currentRemoteJobs ? [...currentRemoteJobs] : [];
   approvedJobs.forEach(j => {
-    if (!merged.find(m => m.id === j.id)) merged.push(j);
+    if (!base.find(m => m.id === j.id)) base.push(j);
   });
   const json = {
     updated_at: new Date().toISOString(),
-    freelas: merged
+    freelas: base
   };
-  const str = JSON.stringify(json, null, 2);
-  document.getElementById('jsonPreview').textContent = str;
-  document.getElementById('pushStatus').textContent = `JSON gerado: ${merged.length} vagas.\nPronto para push.`;
+  document.getElementById('jsonPreview').textContent = JSON.stringify(json, null, 2);
+  document.getElementById('pushStatus').textContent = `JSON gerado: ${base.length} vagas (${currentRemoteJobs?.length||0} existentes + ${approvedJobs.length} novas aprovadas).\nPronto para push.`;
   document.getElementById('pushStatus').className = 'push-status ok';
   return json;
 }
