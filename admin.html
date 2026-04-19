@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GetFreelas — Admin</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --card: #1c2128;
+    --border: #30363d;
+    --accent: #0f6cbd;
+    --accent2: #8764b8;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --radius: 8px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',-apple-system,system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* LOCK SCREEN */
+  .lock-screen { position:fixed; inset:0; background:var(--bg); z-index:999; display:flex; align-items:center; justify-content:center; }
+  .lock-box { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:40px; width:340px; text-align:center; }
+  .lock-logo { font-size:32px; margin-bottom:8px; }
+  .lock-title { font-size:20px; font-weight:700; margin-bottom:4px; }
+  .lock-sub { font-size:13px; color:var(--muted); margin-bottom:24px; }
+  .lock-input { width:100%; background:var(--card); border:1px solid var(--border); border-radius:6px; padding:10px 14px; color:var(--text); font-family:inherit; font-size:14px; outline:none; margin-bottom:12px; }
+  .lock-input:focus { border-color:var(--accent); }
+  .lock-btn { width:100%; padding:10px; background:var(--accent); border:none; border-radius:6px; color:white; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:.15s; }
+  .lock-btn:hover { background:#115ea3; }
+  .lock-err { font-size:12px; color:var(--red); margin-top:8px; display:none; }
+
+  /* LAYOUT */
+  header { background:var(--surface); border-bottom:1px solid var(--border); padding:0 24px; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10; }
+  .h-logo { display:flex; align-items:center; gap:10px; font-size:16px; font-weight:700; }
+  .h-logo-icon { width:28px; height:28px; background:linear-gradient(135deg,#0f6cbd,#8764b8); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:14px; }
+  .h-badge { font-size:11px; background:#1f3a5f; color:#58a6ff; padding:3px 8px; border-radius:10px; font-weight:600; }
+  .h-actions { display:flex; gap:8px; align-items:center; }
+
+  .main { max-width:1100px; margin:0 auto; padding:24px; }
+
+  /* TABS */
+  .tabs { display:flex; gap:4px; margin-bottom:24px; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:4px; width:fit-content; }
+  .tab { padding:8px 18px; border:none; background:transparent; color:var(--muted); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; border-radius:6px; transition:.15s; display:flex; align-items:center; gap:6px; }
+  .tab:hover { color:var(--text); background:var(--card); }
+  .tab.active { background:var(--accent); color:white; }
+  .tab-count { font-size:10px; background:rgba(255,255,255,.2); padding:1px 6px; border-radius:8px; }
+  .tab-count.alert { background:var(--red); }
+
+  /* STATS */
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 20px; }
+  .stat-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
+  .stat-value { font-size:28px; font-weight:700; line-height:1; }
+  .stat-value.green { color:var(--green); }
+  .stat-value.yellow { color:var(--yellow); }
+  .stat-value.red { color:var(--red); }
+  .stat-value.blue { color:#58a6ff; }
+
+  /* SECTION */
+  .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .section-title { font-size:15px; font-weight:700; }
+  .btn { padding:8px 16px; border:none; border-radius:6px; font-family:inherit; font-size:12px; font-weight:600; cursor:pointer; transition:.15s; }
+  .btn-primary { background:var(--accent); color:white; }
+  .btn-primary:hover { background:#115ea3; }
+  .btn-success { background:#1a4731; color:var(--green); border:1px solid #2ea043; }
+  .btn-success:hover { background:#2ea043; color:white; }
+  .btn-danger { background:#3d1a1a; color:var(--red); border:1px solid #f85149; }
+  .btn-danger:hover { background:var(--red); color:white; }
+  .btn-warning { background:#3d2e00; color:var(--yellow); border:1px solid #d29922; }
+  .btn-warning:hover { background:var(--yellow); color:#000; }
+  .btn-ghost { background:transparent; color:var(--muted); border:1px solid var(--border); }
+  .btn-ghost:hover { color:var(--text); border-color:var(--text); }
+  .btn-sm { padding:5px 10px; font-size:11px; }
+
+  /* TABLE */
+  .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+  table { width:100%; border-collapse:collapse; }
+  th { background:var(--card); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); padding:12px 16px; text-align:left; border-bottom:1px solid var(--border); }
+  td { padding:12px 16px; font-size:13px; border-bottom:1px solid var(--border); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(255,255,255,.02); }
+  .td-actions { display:flex; gap:6px; flex-wrap:wrap; }
+
+  /* BADGES */
+  .pill { font-size:11px; font-weight:600; padding:3px 8px; border-radius:10px; display:inline-flex; align-items:center; gap:4px; }
+  .pill-pending  { background:#3d2e00; color:var(--yellow); }
+  .pill-verified { background:#1a4731; color:var(--green); }
+  .pill-rejected { background:#3d1a1a; color:var(--red); }
+  .pill-new      { background:#1f3a5f; color:#58a6ff; }
+  .pill-empresa  { background:#2d1f47; color:#c084fc; }
+
+  /* LOADING */
+  .loading { text-align:center; padding:40px; color:var(--muted); }
+  .spinner { display:inline-block; width:24px; height:24px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; margin-bottom:8px; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  /* EMPTY */
+  .empty-state { text-align:center; padding:48px; color:var(--muted); }
+  .empty-icon { font-size:36px; margin-bottom:8px; opacity:.5; }
+
+  /* CONFIG */
+  .config-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .config-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+  .config-label { font-size:12px; font-weight:600; color:var(--muted); margin-bottom:8px; }
+  .config-input { width:100%; background:var(--card); border:1px solid var(--border); border-radius:6px; padding:9px 12px; color:var(--text); font-family:monospace; font-size:13px; outline:none; }
+  .config-input:focus { border-color:var(--accent); }
+  .config-hint { font-size:11px; color:var(--muted); margin-top:6px; }
+
+  /* PUSH SECTION */
+  .push-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:16px; }
+  .push-title { font-size:14px; font-weight:700; margin-bottom:4px; }
+  .push-sub { font-size:12px; color:var(--muted); margin-bottom:16px; }
+  .push-status { font-size:12px; color:var(--muted); padding:8px 12px; background:var(--card); border-radius:6px; font-family:monospace; min-height:80px; white-space:pre-wrap; }
+  .push-status.ok { color:var(--green); }
+  .push-status.err { color:var(--red); }
+
+  /* MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:100; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--surface); border:1px solid var(--border); border-radius:12px; max-width:520px; width:90%; max-height:85vh; overflow-y:auto; padding:28px; position:relative; animation:slideUp .2s ease; }
+  .modal-close { position:absolute; top:14px; right:14px; background:var(--card); border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:14px; color:var(--muted); display:flex; align-items:center; justify-content:center; }
+  .modal-close:hover { color:var(--text); }
+  .modal-sec { margin-bottom:16px; }
+  .modal-sec-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:6px; }
+  .modal-sec p { font-size:13px; color:var(--text); line-height:1.6; }
+  @keyframes slideUp { from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)} }
+
+  /* TOAST */
+  .toast { position:fixed; bottom:24px; right:24px; background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 18px; font-size:13px; font-weight:600; z-index:999; display:none; animation:slideUp .2s ease; }
+  .toast.show { display:block; }
+  .toast.ok  { border-color:var(--green); color:var(--green); }
+  .toast.err { border-color:var(--red); color:var(--red); }
+
+  @media(max-width:700px){ .stats-grid{grid-template-columns:1fr 1fr;} .config-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ==================== LOCK SCREEN ==================== -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-logo">⚡</div>
+    <div class="lock-title">GetFreelas Admin</div>
+    <div class="lock-sub">Painel local de administração</div>
+    <input class="lock-input" type="password" id="adminPass" placeholder="Senha de acesso" onkeydown="if(event.key==='Enter')checkLock()">
+    <button class="lock-btn" onclick="checkLock()">Entrar no painel</button>
+    <div class="lock-err" id="lockErr">Senha incorreta.</div>
+  </div>
+</div>
+
+<!-- ==================== HEADER ==================== -->
+<header>
+  <div class="h-logo">
+    <div class="h-logo-icon">⚡</div>
+    GetFreelas
+    <span class="h-badge">ADMIN</span>
+  </div>
+  <div class="h-actions">
+    <button class="btn btn-primary" onclick="loadAll()">↺ Atualizar</button>
+    <button class="btn btn-ghost" onclick="openTab('config')">⚙ Config</button>
+  </div>
+</header>
+
+<!-- ==================== MAIN ==================== -->
+<div class="main">
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Usuários cadastrados</div><div class="stat-value blue" id="stUsers">—</div></div>
+    <div class="stat-card"><div class="stat-label">Empresas verificadas</div><div class="stat-value green" id="stVerified">—</div></div>
+    <div class="stat-card"><div class="stat-label">Empresas pendentes</div><div class="stat-value yellow" id="stPending">—</div></div>
+    <div class="stat-card"><div class="stat-label">Vagas para aprovar</div><div class="stat-value red" id="stJobs">—</div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" id="tabEmpresas" onclick="openTab('empresas')">🏢 Empresas <span class="tab-count" id="tcEmpresas">0</span></button>
+    <button class="tab" id="tabVagas" onclick="openTab('vagas')">📋 Vagas pendentes <span class="tab-count alert" id="tcVagas">0</span></button>
+    <button class="tab" id="tabUsuarios" onclick="openTab('usuarios')">👤 Usuários <span class="tab-count" id="tcUsuarios">0</span></button>
+    <button class="tab" id="tabPush" onclick="openTab('push')">🚀 Publicar</button>
+    <button class="tab" id="tabConfig" onclick="openTab('config')">⚙ Config</button>
+  </div>
+
+  <!-- ===== EMPRESAS ===== -->
+  <div id="panelEmpresas">
+    <div class="section-header">
+      <div class="section-title">Cadastros de empresas</div>
+      <button class="btn btn-ghost btn-sm" onclick="loadIssues()">↺ Recarregar</button>
+    </div>
+    <div id="empresasContent">
+      <div class="loading"><div class="spinner"></div><div>Carregando do GitHub...</div></div>
+    </div>
+  </div>
+
+  <!-- ===== VAGAS PENDENTES ===== -->
+  <div id="panelVagas" style="display:none">
+    <div class="section-header">
+      <div class="section-title">Vagas aguardando aprovação</div>
+      <button class="btn btn-ghost btn-sm" onclick="loadIssues()">↺ Recarregar</button>
+    </div>
+    <div id="vagasContent">
+      <div class="loading"><div class="spinner"></div><div>Carregando...</div></div>
+    </div>
+  </div>
+
+  <!-- ===== USUÁRIOS ===== -->
+  <div id="panelUsuarios" style="display:none">
+    <div class="section-header">
+      <div class="section-title">Usuários registrados (via Issues)</div>
+      <button class="btn btn-ghost btn-sm" onclick="loadIssues()">↺ Recarregar</button>
+    </div>
+    <div id="usuariosContent">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- ===== PUSH ===== -->
+  <div id="panelPush" style="display:none">
+    <div class="push-box">
+      <div class="push-title">🚀 Publicar vagas aprovadas no GitHub Pages</div>
+      <div class="push-sub">As vagas aprovadas aqui serão incluídas no freelas.json e publicadas.</div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="generateJSON()">Gerar freelas.json</button>
+        <button class="btn btn-success" onclick="pushToGitHub()">⬆ Push para GitHub</button>
+        <button class="btn btn-ghost btn-sm" onclick="downloadJSON()">⬇ Baixar JSON</button>
+      </div>
+      <div class="push-status" id="pushStatus">Aguardando ação...</div>
+    </div>
+
+    <div class="push-box">
+      <div class="push-title">📋 Preview do freelas.json</div>
+      <div class="push-sub">JSON que será enviado ao GitHub Pages.</div>
+      <pre style="font-size:11px;color:var(--muted);max-height:300px;overflow:auto;background:var(--card);padding:12px;border-radius:6px" id="jsonPreview">Clique em "Gerar freelas.json" para visualizar.</pre>
+    </div>
+  </div>
+
+  <!-- ===== CONFIG ===== -->
+  <div id="panelConfig" style="display:none">
+    <div class="section-header"><div class="section-title">Configurações do painel</div></div>
+    <div class="config-grid">
+      <div class="config-card">
+        <div class="config-label">GitHub Token (PAT)</div>
+        <input class="config-input" type="password" id="cfgToken" placeholder="ghp_xxxxxxxxxxxx">
+        <div class="config-hint">Escopo necessário: <code>issues:read/write</code> + <code>contents:write</code> no repo</div>
+      </div>
+      <div class="config-card">
+        <div class="config-label">Repositório de dados (privado)</div>
+        <input class="config-input" type="text" id="cfgRepo" placeholder="usuario/getfreelas-data">
+        <div class="config-hint">Repo privado onde chegam os cadastros via Issues</div>
+      </div>
+      <div class="config-card">
+        <div class="config-label">Repositório do site (GitHub Pages)</div>
+        <input class="config-input" type="text" id="cfgSiteRepo" placeholder="usuario/getfreelas">
+        <div class="config-hint">Repo público que serve o GitHub Pages</div>
+      </div>
+      <div class="config-card">
+        <div class="config-label">Branch do site</div>
+        <input class="config-input" type="text" id="cfgBranch" placeholder="main">
+        <div class="config-hint">Branch onde o freelas.json será atualizado</div>
+      </div>
+      <div class="config-card">
+        <div class="config-label">Senha do painel admin</div>
+        <input class="config-input" type="password" id="cfgAdminPass" placeholder="Nova senha">
+        <div class="config-hint">Usada para acessar este painel</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="saveConfig()">Salvar configurações</button>
+      <button class="btn btn-ghost" onclick="loadConfig()">↺ Restaurar</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== MODAL DETALHE EMPRESA ==================== -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+    <div style="font-size:18px;font-weight:700;margin-bottom:16px" id="dmTitle">Detalhe</div>
+    <div id="dmBody"></div>
+    <div style="display:flex;gap:8px;margin-top:20px" id="dmActions"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================================================
+// CONFIG (salvo em localStorage do admin)
+// =====================================================
+const CFG_KEY = 'gf_admin_cfg';
+
+function getCfg() {
+  try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; } catch(e) { return {}; }
+}
+function saveCfg(obj) { localStorage.setItem(CFG_KEY, JSON.stringify(obj)); }
+
+function loadConfig() {
+  const c = getCfg();
+  document.getElementById('cfgToken').value    = c.token    || '';
+  document.getElementById('cfgRepo').value     = c.repo     || '';
+  document.getElementById('cfgSiteRepo').value = c.siteRepo || '';
+  document.getElementById('cfgBranch').value   = c.branch   || 'main';
+  document.getElementById('cfgAdminPass').value = '';
+}
+
+function saveConfig() {
+  const c = getCfg();
+  c.token    = document.getElementById('cfgToken').value.trim();
+  c.repo     = document.getElementById('cfgRepo').value.trim();
+  c.siteRepo = document.getElementById('cfgSiteRepo').value.trim();
+  c.branch   = document.getElementById('cfgBranch').value.trim() || 'main';
+  const newPass = document.getElementById('cfgAdminPass').value;
+  if (newPass) c.adminPass = newPass;
+  saveCfg(c);
+  toast('✓ Configurações salvas', 'ok');
+}
+
+// =====================================================
+// LOCK SCREEN
+// =====================================================
+const DEFAULT_PASS = 'admin123'; // troque depois
+
+function checkLock() {
+  const c = getCfg();
+  const pass = c.adminPass || DEFAULT_PASS;
+  if (document.getElementById('adminPass').value === pass) {
+    document.getElementById('lockScreen').style.display = 'none';
+    loadAll();
+  } else {
+    document.getElementById('lockErr').style.display = 'block';
+  }
+}
+
+document.getElementById('adminPass').addEventListener('keydown', e => { if(e.key==='Enter') checkLock(); });
+
+// =====================================================
+// GITHUB API
+// =====================================================
+async function ghFetch(path, opts={}) {
+  const c = getCfg();
+  if (!c.token) { toast('Configure o token GitHub na aba Config', 'err'); return null; }
+  const res = await fetch(`https://api.github.com${path}`, {
+    ...opts,
+    headers: {
+      'Authorization': `Bearer ${c.token}`,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+      ...(opts.headers || {})
+    }
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.message || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+// =====================================================
+// ISSUES
+// =====================================================
+let allIssues = [];
+let approvedJobs = JSON.parse(localStorage.getItem('gf_approved_jobs') || '[]');
+
+async function loadIssues() {
+  const c = getCfg();
+  if (!c.token || !c.repo) {
+    renderEmptyConfig('empresasContent');
+    renderEmptyConfig('vagasContent');
+    renderEmptyConfig('usuariosContent');
+    return;
+  }
+  try {
+    // Busca todas as issues abertas + fechadas (limite 100)
+    const [open, closed] = await Promise.all([
+      ghFetch(`/repos/${c.repo}/issues?state=open&per_page=100`),
+      ghFetch(`/repos/${c.repo}/issues?state=closed&per_page=100`)
+    ]);
+    allIssues = [...(open||[]), ...(closed||[])];
+    renderAll();
+  } catch(e) {
+    toast('Erro ao buscar issues: ' + e.message, 'err');
+    renderError('empresasContent', e.message);
+  }
+}
+
+function renderEmptyConfig(id) {
+  document.getElementById(id).innerHTML = `<div class="empty-state"><div class="empty-icon">⚙</div><div>Configure o token e repositório na aba <strong>Config</strong> para carregar os dados.</div></div>`;
+}
+
+function renderError(id, msg) {
+  document.getElementById(id).innerHTML = `<div class="empty-state"><div class="empty-icon">⚠</div><div style="color:var(--red)">${msg}</div></div>`;
+}
+
+function getLabels(issue) {
+  return (issue.labels||[]).map(l => l.name);
+}
+
+function renderAll() {
+  const empresas  = allIssues.filter(i => getLabels(i).includes('empresa'));
+  const usuarios  = allIssues.filter(i => getLabels(i).includes('usuario'));
+  const vagas     = allIssues.filter(i => getLabels(i).includes('vaga-pendente') || getLabels(i).includes('vaga-empresa'));
+  const pendentes = empresas.filter(i => getLabels(i).includes('pendente') && i.state === 'open');
+
+  // Stats
+  document.getElementById('stUsers').textContent    = usuarios.length;
+  document.getElementById('stVerified').textContent = empresas.filter(i => getLabels(i).includes('verificado')).length;
+  document.getElementById('stPending').textContent  = pendentes.length;
+  document.getElementById('stJobs').textContent     = vagas.filter(i => i.state === 'open').length;
+
+  // Tab counts
+  document.getElementById('tcEmpresas').textContent = empresas.length;
+  document.getElementById('tcVagas').textContent    = vagas.filter(i=>i.state==='open').length;
+  document.getElementById('tcUsuarios').textContent = usuarios.length;
+
+  renderEmpresas(empresas);
+  renderVagas(vagas);
+  renderUsuarios(usuarios);
+}
+
+// ==================== RENDER EMPRESAS ====================
+function renderEmpresas(list) {
+  if (!list.length) {
+    document.getElementById('empresasContent').innerHTML = '<div class="empty-state"><div class="empty-icon">🏢</div><div>Nenhuma empresa cadastrada ainda.</div></div>';
+    return;
+  }
+  document.getElementById('empresasContent').innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Empresa</th><th>Status</th><th>Data</th><th>Ações</th>
+        </tr></thead>
+        <tbody>
+          ${list.map(i => {
+            const labels = getLabels(i);
+            const verified = labels.includes('verificado');
+            const rejected = labels.includes('rejeitado');
+            const pill = verified ? 'pill-verified' : rejected ? 'pill-rejected' : 'pill-pending';
+            const status = verified ? '✓ Verificada' : rejected ? '✗ Rejeitada' : '⏳ Pendente';
+            const date = new Date(i.created_at).toLocaleDateString('pt-BR');
+            return `<tr>
+              <td style="color:var(--muted);font-size:11px">#${i.number}</td>
+              <td><strong>${i.title.replace('🏢 Nova empresa: ','')}</strong></td>
+              <td><span class="pill ${pill}">${status}</span></td>
+              <td style="color:var(--muted)">${date}</td>
+              <td><div class="td-actions">
+                <button class="btn btn-ghost btn-sm" onclick="showIssueDetail(${i.number})">Ver</button>
+                ${!verified && !rejected ? `
+                  <button class="btn btn-success btn-sm" onclick="verifyEmpresa(${i.number})">✓ Verificar</button>
+                  <button class="btn btn-danger btn-sm" onclick="rejectEmpresa(${i.number})">✗ Rejeitar</button>
+                ` : ''}
+              </div></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+// ==================== RENDER VAGAS ====================
+function renderVagas(list) {
+  if (!list.length) {
+    document.getElementById('vagasContent').innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>Nenhuma vaga pendente.</div></div>';
+    return;
+  }
+  document.getElementById('vagasContent').innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Vaga</th><th>Origem</th><th>Status</th><th>Ações</th>
+        </tr></thead>
+        <tbody>
+          ${list.map(i => {
+            const labels = getLabels(i);
+            const approved = approvedJobs.find(j => j.issueNumber === i.number);
+            const origin = labels.includes('ia') ? '<span class="pill pill-new">🤖 IA</span>' : '<span class="pill pill-empresa">🏢 Empresa</span>';
+            const status = i.state === 'closed'
+              ? '<span class="pill pill-verified">✓ Aprovada</span>'
+              : approved ? '<span class="pill pill-verified">✓ Aprovada (local)</span>'
+              : '<span class="pill pill-pending">⏳ Pendente</span>';
+            return `<tr>
+              <td style="color:var(--muted);font-size:11px">#${i.number}</td>
+              <td><strong>${i.title.replace(/^[🤖🏢] /,'')}</strong></td>
+              <td>${origin}</td>
+              <td>${status}</td>
+              <td><div class="td-actions">
+                <button class="btn btn-ghost btn-sm" onclick="showIssueDetail(${i.number})">Ver</button>
+                ${!approved && i.state === 'open' ? `
+                  <button class="btn btn-success btn-sm" onclick="approveJob(${i.number})">✓ Aprovar</button>
+                  <button class="btn btn-danger btn-sm" onclick="rejectJob(${i.number})">✗ Rejeitar</button>
+                ` : ''}
+              </div></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+// ==================== RENDER USUÁRIOS ====================
+function renderUsuarios(list) {
+  if (!list.length) {
+    document.getElementById('usuariosContent').innerHTML = '<div class="empty-state"><div class="empty-icon">👤</div><div>Nenhum usuário cadastrado ainda.</div></div>';
+    return;
+  }
+  document.getElementById('usuariosContent').innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Nome</th><th>Email</th><th>Data de cadastro</th></tr></thead>
+        <tbody>
+          ${list.map(i => {
+            const lines = i.body ? i.body.split('\n') : [];
+            const email = lines.find(l=>l.startsWith('**Email:**'))?.replace('**Email:**','').trim() || '—';
+            const nome  = i.title.replace('👤 Novo usuário: ','');
+            const date  = new Date(i.created_at).toLocaleDateString('pt-BR');
+            return `<tr>
+              <td style="color:var(--muted);font-size:11px">#${i.number}</td>
+              <td>${nome}</td>
+              <td style="color:var(--muted)">${email}</td>
+              <td style="color:var(--muted)">${date}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+// =====================================================
+// ACTIONS
+// =====================================================
+async function verifyEmpresa(num) {
+  const c = getCfg();
+  try {
+    await ghFetch(`/repos/${c.repo}/issues/${num}/labels`, {
+      method: 'POST', body: JSON.stringify({ labels: ['verificado'] })
+    });
+    // Remove label 'pendente'
+    await ghFetch(`/repos/${c.repo}/issues/${num}/labels/pendente`, { method: 'DELETE' }).catch(()=>{});
+    await ghFetch(`/repos/${c.repo}/issues/${num}`, { method: 'PATCH', body: JSON.stringify({ state: 'closed' }) });
+    toast('✓ Empresa verificada!', 'ok');
+    loadIssues();
+  } catch(e) { toast('Erro: ' + e.message, 'err'); }
+}
+
+async function rejectEmpresa(num) {
+  if (!confirm('Rejeitar esta empresa?')) return;
+  const c = getCfg();
+  try {
+    await ghFetch(`/repos/${c.repo}/issues/${num}/labels`, { method: 'POST', body: JSON.stringify({ labels: ['rejeitado'] }) });
+    await ghFetch(`/repos/${c.repo}/issues/${num}/labels/pendente`, { method: 'DELETE' }).catch(()=>{});
+    await ghFetch(`/repos/${c.repo}/issues/${num}`, { method: 'PATCH', body: JSON.stringify({ state: 'closed' }) });
+    toast('Empresa rejeitada.', 'err');
+    loadIssues();
+  } catch(e) { toast('Erro: ' + e.message, 'err'); }
+}
+
+function approveJob(num) {
+  const issue = allIssues.find(i => i.number === num);
+  if (!issue) return;
+  // Tenta parsear o body como JSON
+  let jobData = null;
+  try {
+    const jsonMatch = issue.body.match(/```json\n([\s\S]+?)\n```/);
+    if (jsonMatch) jobData = JSON.parse(jsonMatch[1]);
+  } catch(e) {}
+  if (!jobData) {
+    // Cria um job básico a partir do título
+    jobData = {
+      id: num,
+      title: issue.title.replace(/^[🤖🏢📋] /,''),
+      company: 'Via plataforma',
+      category: 'tech',
+      type: 'freela',
+      desc: issue.body || '',
+      req: '',
+      details: '',
+      contact: '',
+      pay: 'A combinar',
+      payNum: 0,
+      payPeriod: 'projeto',
+      tags: [],
+      location: 'Remoto',
+      urgency: 'new',
+      avatar: 0,
+      posted: 'recente'
+    };
+  }
+  jobData.issueNumber = num;
+  approvedJobs = approvedJobs.filter(j => j.issueNumber !== num);
+  approvedJobs.push(jobData);
+  localStorage.setItem('gf_approved_jobs', JSON.stringify(approvedJobs));
+  toast('✓ Vaga aprovada localmente. Publique na aba Publicar.', 'ok');
+  renderVagas(allIssues.filter(i => getLabels(i).includes('vaga-pendente') || getLabels(i).includes('vaga-empresa')));
+}
+
+async function rejectJob(num) {
+  if (!confirm('Rejeitar esta vaga?')) return;
+  const c = getCfg();
+  try {
+    await ghFetch(`/repos/${c.repo}/issues/${num}`, { method: 'PATCH', body: JSON.stringify({ state: 'closed', labels: ['rejeitado'] }) });
+    toast('Vaga rejeitada.', 'err');
+    loadIssues();
+  } catch(e) { toast('Erro: ' + e.message, 'err'); }
+}
+
+// =====================================================
+// ISSUE DETAIL MODAL
+// =====================================================
+function showIssueDetail(num) {
+  const issue = allIssues.find(i => i.number === num);
+  if (!issue) return;
+  document.getElementById('dmTitle').textContent = issue.title;
+  document.getElementById('dmBody').innerHTML = `
+    <div class="modal-sec"><div class="modal-sec-title">Conteúdo</div><p style="white-space:pre-wrap">${issue.body || '(sem corpo)'}</p></div>
+    <div class="modal-sec"><div class="modal-sec-title">Labels</div><p>${(issue.labels||[]).map(l=>`<span class="pill pill-new">${l.name}</span>`).join(' ')}</p></div>
+    <div class="modal-sec"><div class="modal-sec-title">Aberto em</div><p>${new Date(issue.created_at).toLocaleString('pt-BR')}</p></div>
+  `;
+  const labels = getLabels(issue);
+  let actions = '';
+  if (labels.includes('empresa') && !labels.includes('verificado') && !labels.includes('rejeitado')) {
+    actions += `<button class="btn btn-success" onclick="verifyEmpresa(${num});closeModal('detailModal')">✓ Verificar empresa</button>`;
+    actions += `<button class="btn btn-danger" onclick="rejectEmpresa(${num});closeModal('detailModal')">✗ Rejeitar</button>`;
+  }
+  if ((labels.includes('vaga-pendente') || labels.includes('vaga-empresa')) && issue.state === 'open') {
+    actions += `<button class="btn btn-success" onclick="approveJob(${num});closeModal('detailModal')">✓ Aprovar vaga</button>`;
+    actions += `<button class="btn btn-danger" onclick="rejectJob(${num});closeModal('detailModal')">✗ Rejeitar</button>`;
+  }
+  document.getElementById('dmActions').innerHTML = actions;
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// =====================================================
+// PUSH / PUBLISH
+// =====================================================
+const DEMO_JOBS = [
+  {id:1,title:"Desenvolvedor React para Landing Page",company:"Agência Fuse",category:"tech",type:"freela",desc:"Preciso de um dev React para criar uma landing page responsiva.",req:"Experiência com React e Tailwind.",details:"Prazo de 5 dias.",contact:"vagas@agenciafuse.com.br",pay:"R$ 800",payNum:800,payPeriod:"projeto",tags:["React","Figma","Tailwind"],location:"Remoto",urgency:"new",avatar:0,posted:"há 2h"},
+  {id:2,title:"Designer de Identidade Visual",company:"StartupX",category:"design",type:"freela",desc:"Startup busca designer para logo e guia de marca.",req:"Portfólio de identidades visuais.",details:"Entrega em 10 dias.",contact:"hello@startupx.io",pay:"R$ 1.200",payNum:1200,payPeriod:"projeto",tags:["Design","Branding"],location:"Remoto",urgency:"normal",avatar:1,posted:"há 5h"}
+];
+
+function generateJSON() {
+  const merged = [...DEMO_JOBS];
+  approvedJobs.forEach(j => {
+    if (!merged.find(m => m.id === j.id)) merged.push(j);
+  });
+  const json = {
+    updated_at: new Date().toISOString(),
+    freelas: merged
+  };
+  const str = JSON.stringify(json, null, 2);
+  document.getElementById('jsonPreview').textContent = str;
+  document.getElementById('pushStatus').textContent = `JSON gerado: ${merged.length} vagas.\nPronto para push.`;
+  document.getElementById('pushStatus').className = 'push-status ok';
+  return json;
+}
+
+function downloadJSON() {
+  const json = generateJSON();
+  const blob = new Blob([JSON.stringify(json, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'freelas.json';
+  a.click();
+  toast('✓ freelas.json baixado', 'ok');
+}
+
+async function pushToGitHub() {
+  const c = getCfg();
+  if (!c.token || !c.siteRepo) {
+    toast('Configure token e repositório do site na aba Config', 'err');
+    return;
+  }
+  const json = generateJSON();
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(json, null, 2))));
+  const path = 'data/freelas.json';
+  const status = document.getElementById('pushStatus');
+  status.textContent = 'Buscando SHA atual do arquivo...';
+  status.className = 'push-status';
+  try {
+    // Busca SHA atual do arquivo (necessário para update)
+    let sha = null;
+    try {
+      const existing = await ghFetch(`/repos/${c.siteRepo}/contents/${path}?ref=${c.branch||'main'}`);
+      sha = existing?.sha;
+    } catch(e) { /* arquivo não existe ainda, criará */ }
+
+    status.textContent = 'Enviando para o GitHub...';
+    await ghFetch(`/repos/${c.siteRepo}/contents/${path}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        message: `chore: atualiza freelas.json — ${new Date().toLocaleString('pt-BR')}`,
+        content,
+        branch: c.branch || 'main',
+        ...(sha ? { sha } : {})
+      })
+    });
+    status.textContent = `✓ Push realizado com sucesso!\nArquivo: ${path}\nRepo: ${c.siteRepo}\nBranch: ${c.branch||'main'}\nHorário: ${new Date().toLocaleString('pt-BR')}`;
+    status.className = 'push-status ok';
+    toast('✓ Publicado no GitHub Pages!', 'ok');
+  } catch(e) {
+    status.textContent = `✗ Erro: ${e.message}`;
+    status.className = 'push-status err';
+    toast('Erro no push: ' + e.message, 'err');
+  }
+}
+
+// =====================================================
+// TABS
+// =====================================================
+const panels = ['Empresas','Vagas','Usuarios','Push','Config'];
+function openTab(name) {
+  panels.forEach(p => {
+    document.getElementById(`panel${p}`).style.display = 'none';
+    document.getElementById(`tab${p}`)?.classList.remove('active');
+  });
+  const cap = name.charAt(0).toUpperCase() + name.slice(1);
+  document.getElementById(`panel${cap}`).style.display = '';
+  document.getElementById(`tab${cap}`)?.classList.add('active');
+}
+
+// =====================================================
+// TOAST
+// =====================================================
+function toast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// =====================================================
+// INIT
+// =====================================================
+function loadAll() {
+  loadConfig();
+  loadIssues();
+}
+
+document.querySelectorAll('.modal-overlay').forEach(el =>
+  el.addEventListener('click', e => { if(e.target===el) el.classList.remove('open'); })
+);
+</script>
+</body>
+</html>

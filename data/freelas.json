@@ -1,0 +1,62 @@
+{
+  "updated_at": "2026-04-19T12:00:00Z",
+  "freelas": [
+    {
+      "id": 1,
+      "title": "Desenvolvedor React para Landing Page",
+      "company": "Agência Fuse",
+      "category": "tech",
+      "type": "freela",
+      "desc": "Preciso de um dev React para criar uma landing page responsiva com animações. Design já está pronto no Figma.",
+      "req": "Experiência com React e Tailwind. Diferencial: Framer Motion.",
+      "details": "Prazo de 5 dias. Reunião inicial via Meet.",
+      "contact": "vagas@agenciafuse.com.br",
+      "pay": "R$ 800",
+      "payNum": 800,
+      "payPeriod": "projeto",
+      "tags": ["React", "Figma", "Tailwind"],
+      "location": "Remoto",
+      "urgency": "new",
+      "avatar": 0,
+      "posted": "há 2h"
+    },
+    {
+      "id": 2,
+      "title": "Garçom para Evento Corporativo",
+      "company": "Eventos Ágora",
+      "category": "eventos",
+      "type": "rapido",
+      "desc": "Precisamos de 3 garçons para evento corporativo de 200 pessoas. Serviço de buffet, 8h de trabalho.",
+      "req": "Experiência anterior em eventos. Apresentação impecável.",
+      "details": "Sábado 19/04, das 14h às 22h. Uniforme fornecido.",
+      "contact": "(11) 98888-1234",
+      "pay": "R$ 180",
+      "payNum": 180,
+      "payPeriod": "dia",
+      "tags": ["Eventos", "Presencial", "Urgente"],
+      "location": "São Paulo",
+      "urgency": "hot",
+      "avatar": 3,
+      "posted": "há 1h"
+    },
+    {
+      "id": 3,
+      "title": "Designer de Identidade Visual",
+      "company": "StartupX",
+      "category": "design",
+      "type": "freela",
+      "desc": "Startup em fase inicial busca designer para criação de logo, paleta de cores e guia de marca completo.",
+      "req": "Portfólio de identidades visuais. Domínio de Illustrator ou equivalente.",
+      "details": "Entrega em 10 dias. Possibilidade de contrato contínuo.",
+      "contact": "hello@startupx.io",
+      "pay": "R$ 1.200",
+      "payNum": 1200,
+      "payPeriod": "projeto",
+      "tags": ["Design", "Branding", "Logo"],
+      "location": "Remoto",
+      "urgency": "normal",
+      "avatar": 1,
+      "posted": "há 5h"
+    }
+  ]
+}
