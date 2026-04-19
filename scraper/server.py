@@ -13,9 +13,10 @@ from datetime import datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
-BASE_DIR = Path(__file__).parent
-LOG_FILE = BASE_DIR / "last_run.json"
-PORT     = 8765
+BASE_DIR      = Path(__file__).parent
+LOG_FILE      = BASE_DIR / "last_run.json"
+EMPRESAS_FILE = BASE_DIR.parent / "data" / "empresas_local.json"
+PORT          = 8765
 
 # Estado compartilhado
 state = {
@@ -100,8 +101,40 @@ class Handler(BaseHTTPRequestHandler):
         self.cors()
         self.end_headers()
 
+    def read_body(self):
+        length = int(self.headers.get("Content-Length", 0))
+        return self.rfile.read(length)
+
+    def do_POST(self):
+        if self.path == "/register":
+            try:
+                data = json.loads(self.read_body().decode("utf-8"))
+                empresas = []
+                if EMPRESAS_FILE.exists():
+                    with open(EMPRESAS_FILE, encoding="utf-8") as f:
+                        empresas = json.load(f)
+                # Evita duplicata por email
+                empresas = [e for e in empresas if e.get("email") != data.get("email")]
+                data["receivedAt"] = datetime.now().isoformat()
+                empresas.append(data)
+                EMPRESAS_FILE.parent.mkdir(exist_ok=True)
+                with open(EMPRESAS_FILE, "w", encoding="utf-8") as f:
+                    json.dump(empresas, f, ensure_ascii=False, indent=2)
+                self.send_json(200, {"ok": True})
+            except Exception as e:
+                self.send_json(500, {"ok": False, "error": str(e)})
+        else:
+            self.send_json(404, {"error": "not found"})
+
     def do_GET(self):
-        if self.path == "/status":
+        if self.path == "/empresas":
+            empresas = []
+            if EMPRESAS_FILE.exists():
+                with open(EMPRESAS_FILE, encoding="utf-8") as f:
+                    empresas = json.load(f)
+            self.send_json(200, {"empresas": empresas})
+
+        elif self.path == "/status":
             self.send_json(200, {
                 "running":     state["running"],
                 "last_run":    state["last_run"],
