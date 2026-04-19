@@ -183,6 +183,17 @@
   .pending-notice { background:#fff4ce; border:1px solid #f0d060; border-radius:10px; padding:14px 18px; margin-bottom:20px; font-size:13px; color:#8a6914; display:none; }
   .pending-notice.show { display:block; }
 
+  /* PLANS */
+  .plans-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .plan-opt { border:2px solid var(--border); border-radius:10px; padding:14px 10px; text-align:center; cursor:pointer; transition:.15s; position:relative; }
+  .plan-opt:hover { border-color:var(--accent); }
+  .plan-opt.active { border-color:var(--accent); background:#eff6fc; }
+  .plan-opt.popular::before { content:'Popular'; position:absolute; top:-9px; left:50%; transform:translateX(-50%); background:var(--accent2); color:white; font-size:10px; font-weight:700; padding:2px 8px; border-radius:8px; }
+  .plan-name { font-weight:700; font-size:14px; margin-bottom:6px; }
+  .plan-price { font-size:20px; font-weight:700; color:var(--accent); line-height:1; }
+  .plan-period { font-size:10px; color:var(--muted); margin-bottom:6px; }
+  .plan-feat { font-size:11px; color:var(--muted); line-height:1.5; }
+
   @keyframes fadeUp { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)} }
   @keyframes slideUp { from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)} }
   ::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-thumb{background:#ddd;border-radius:10px}
@@ -222,12 +233,17 @@
     <div class="search-wrap">
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="Buscar vaga, habilidade..." oninput="render()">
-        <select id="locFilter" onchange="render()">
-          <option value="">Qualquer lugar</option>
-          <option>São Paulo</option>
-          <option>Rio de Janeiro</option>
-          <option>Remoto</option>
-          <option>Belo Horizonte</option>
+        <select id="countryFilter" onchange="onCountryChange()" style="border:none;border-left:1px solid var(--border);padding:0 10px;font-family:inherit;font-size:13px;color:var(--muted);cursor:pointer;background:#fafafa;outline:none;max-width:130px">
+          <option value="">🌍 País</option>
+          <option value="BR">🇧🇷 Brasil</option>
+          <option value="US">🇺🇸 EUA</option>
+          <option value="CA">🇨🇦 Canadá</option>
+          <option value="EU">🇪🇺 Europa</option>
+          <option value="CN">🇨🇳 China</option>
+          <option value="AU">🇦🇺 Austrália</option>
+        </select>
+        <select id="stateFilter" onchange="render()" style="display:none;border:none;border-left:1px solid var(--border);padding:0 10px;font-family:inherit;font-size:13px;color:var(--muted);cursor:pointer;background:#fafafa;outline:none;max-width:140px">
+          <option value="">Todos estados</option>
         </select>
       </div>
       <button class="btn-search" onclick="render()">Buscar</button>
@@ -241,7 +257,7 @@
     <div class="stat"><div class="stat-icon" style="background:#eff6fc">📋</div><div><div class="stat-num" id="sVagas">0</div><div class="stat-desc">vagas ativas</div></div></div>
     <div class="stat"><div class="stat-icon" style="background:#f3ecf8">👥</div><div><div class="stat-num" id="sUsuarios">—</div><div class="stat-desc">profissionais</div></div></div>
     <div class="stat"><div class="stat-icon" style="background:#dff6dd">🆕</div><div><div class="stat-num" id="sHoje">0</div><div class="stat-desc">postadas hoje</div></div></div>
-    <div class="stat"><div class="stat-icon" style="background:#fde7e9">🌍</div><div><div class="stat-num" id="sFontes">2</div><div class="stat-desc">fontes ativas</div></div></div>
+    <div class="stat"><div class="stat-icon" style="background:#fde7e9">🌍</div><div><div class="stat-num" id="sFontes">4</div><div class="stat-desc">fontes ativas</div></div></div>
   </div>
 </div>
 
@@ -393,6 +409,30 @@
         <option value="outro">Outro</option>
       </select>
     </div>
+    <div class="form-row">
+      <label class="form-label">Escolha seu plano</label>
+      <div class="plans-grid">
+        <div class="plan-opt active" id="planFree" onclick="choosePlan('free')">
+          <div class="plan-name">Grátis</div>
+          <div class="plan-price">R$ 0</div>
+          <div class="plan-period">/mês</div>
+          <div class="plan-feat">1 vaga/mês<br>Sem destaque</div>
+        </div>
+        <div class="plan-opt popular" id="planPro" onclick="choosePlan('pro')">
+          <div class="plan-name">Pro</div>
+          <div class="plan-price">R$ 49</div>
+          <div class="plan-period">/mês</div>
+          <div class="plan-feat">10 vagas/mês<br>Vagas em destaque</div>
+        </div>
+        <div class="plan-opt" id="planBusiness" onclick="choosePlan('business')">
+          <div class="plan-name">Business</div>
+          <div class="plan-price">R$ 99</div>
+          <div class="plan-period">/mês</div>
+          <div class="plan-feat">Ilimitado<br>Destaque premium</div>
+        </div>
+      </div>
+      <input type="hidden" id="ePlano" value="free">
+    </div>
     <div class="form-hint" style="margin-bottom:16px">⏳ Cadastro passa por verificação manual. Você será notificado pelo email fornecido.</div>
     <button class="modal-apply" onclick="doEmpresaRegister()">Enviar cadastro →</button>
     <button class="modal-apply secondary" style="margin-top:8px" onclick="closeModal('empresaModal');openAuth('login')">Já tenho cadastro — Entrar</button>
@@ -422,11 +462,26 @@
   </div>
 </div>
 
+<!-- ==================== MODAL: PAGAMENTO ==================== -->
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal modal-sm">
+    <button class="modal-close" onclick="closeModal('paymentModal')">✕</button>
+    <div style="font-size:22px;font-weight:700;margin-bottom:6px">Finalizar pagamento</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Cadastro enviado! Realize o pagamento abaixo para ativar seu plano.</div>
+    <div id="paymentDetails"></div>
+    <div style="margin-top:16px;padding:12px 14px;background:#fff4ce;border:1px solid #f0d060;border-radius:8px;font-size:12px;color:#8a6914">
+      Após o pagamento, envie o comprovante para <strong>pezzarine@gmail.com</strong> com o assunto <strong>[GetFreelas] Pagamento</strong>. Ativação em até 24h úteis.
+    </div>
+    <button class="modal-apply" style="margin-top:16px" onclick="closeModal('paymentModal')">Entendi, enviarei o comprovante →</button>
+  </div>
+</div>
+
 <script>
 // =====================================================
 // CONFIG — substitua com seus dados antes do deploy
 // =====================================================
-const ADMIN_EMAIL = 'pezzarine@gmail.com'; // email que recebe notificações de cadastro
+const ADMIN_EMAIL = 'pezzarine@gmail.com';
+const PIX_KEY     = 'pezzarine@gmail.com'; // chave Pix para pagamentos // email que recebe notificações de cadastro
 
 // =====================================================
 // STATE
@@ -437,6 +492,40 @@ let currentUser = null;
 
 const T = {freela:{l:'Freela',c:'b-freela'},rapido:{l:'Rápido',c:'b-rapido'},temp:{l:'Temporário',c:'b-temp'}};
 const U = {hot:{l:'🔥 Urgente',c:'b-hot'},new:{l:'✦ Novo',c:'b-new'},normal:{l:'Aberto',c:'b-normal'}};
+
+// =====================================================
+// LOCATION DATA
+// =====================================================
+const STATES = {
+  BR: ['São Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Florianópolis','Salvador','Brasília'],
+  US: ['New York','Los Angeles','San Francisco','Chicago','Miami','Seattle','Austin','Boston'],
+  CA: ['Toronto','Vancouver','Montreal','Calgary','Ottawa','Edmonton','Winnipeg','Halifax'],
+  EU: ['Londres','Paris','Berlim','Amsterdã','Lisboa','Madri','Roma','Dublin'],
+  CN: ['Xangai','Pequim','Shenzhen','Guangzhou','Chengdu','Hangzhou','Wuhan','Chongqing'],
+  AU: ['Sydney','Melbourne','Brisbane','Perth','Adelaide','Canberra','Gold Coast','Hobart'],
+};
+const COUNTRY_KEYWORDS = {
+  BR: ['brasil','brazil','são paulo','rio de janeiro','belo horizonte','curitiba','porto alegre','florianópolis','salvador','brasília','remoto'],
+  US: ['united states','usa','new york','los angeles','san francisco','chicago','miami','seattle','austin','boston','remote'],
+  CA: ['canada','toronto','vancouver','montreal','calgary','ottawa','edmonton'],
+  EU: ['europe','london','paris','berlin','amsterdam','lisbon','madrid','rome','dublin'],
+  CN: ['china','shanghai','beijing','shenzhen','guangzhou','chengdu'],
+  AU: ['australia','sydney','melbourne','brisbane','perth','adelaide'],
+};
+
+function onCountryChange() {
+  const country = document.getElementById('countryFilter').value;
+  const stateEl = document.getElementById('stateFilter');
+  if (country && STATES[country]) {
+    stateEl.style.display = '';
+    stateEl.innerHTML = `<option value="">Todos estados</option>` +
+      STATES[country].map(s => `<option value="${s}">${s}</option>`).join('');
+  } else {
+    stateEl.style.display = 'none';
+    stateEl.value = '';
+  }
+  render();
+}
 
 // =====================================================
 // AUTH — hash com Web Crypto
@@ -503,21 +592,38 @@ async function doEmpresaRegister() {
   const tel   = document.getElementById('eTel').value.trim();
   const senha = document.getElementById('eSenha').value;
   const area  = document.getElementById('eArea').value;
+  const plano = document.getElementById('ePlano').value;
   if (!nome || !cnpj || !email || !tel || !senha) return showAlert('empresaAlert','error','Preencha todos os campos obrigatórios.');
   const users = getUsers();
   if (users.find(u => u.email === email)) return showAlert('empresaAlert','error','Email já cadastrado.');
   const hash = await hashPw(senha);
-  const user = { name: nome, email, hash, type: 'empresa', status: 'pendente', cnpj, tel, area, createdAt: new Date().toISOString() };
+  const planStatus = plano === 'free' ? 'ativo' : 'aguardando_pagamento';
+  const user = { name: nome, email, hash, type: 'empresa', status: 'pendente', cnpj, tel, area, plano, planStatus, createdAt: new Date().toISOString() };
   users.push(user);
   saveUsers(users);
   saveSession(user);
+  const planNames = { free: 'Grátis', pro: 'Pro (R$ 49/mês)', business: 'Business (R$ 99/mês)' };
   notifyAdmin(
     `Nova empresa para verificar: ${nome}`,
-    `Razão Social: ${nome}\nCNPJ: ${cnpj}\nEmail: ${email}\nTelefone: ${tel}\nÁrea: ${area}\nData: ${new Date().toLocaleString('pt-BR')}\n\nAbra o admin.html para verificar.`
+    `Razão Social: ${nome}\nCNPJ: ${cnpj}\nEmail: ${email}\nTelefone: ${tel}\nÁrea: ${area}\nPlano: ${planNames[plano]||plano}\nData: ${new Date().toLocaleString('pt-BR')}\n\nAbra o admin.html para verificar.`
   );
   closeModal('empresaModal');
   updateAuthUI();
   render();
+  // Se plano pago, exibe modal de pagamento
+  if (plano !== 'free') {
+    const prices = { pro: { val: 'R$ 49', desc: '10 vagas/mês + destaque' }, business: { val: 'R$ 99', desc: 'Vagas ilimitadas + destaque premium' } };
+    const p = prices[plano];
+    document.getElementById('paymentDetails').innerHTML = `
+      <div style="background:#eff6fc;border:1px solid #c7e0f4;border-radius:10px;padding:16px;margin-bottom:14px;text-align:center">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Plano selecionado</div>
+        <div style="font-size:20px;font-weight:700;color:var(--accent)">${p.val}/mês</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${p.desc}</div>
+      </div>
+      <div style="margin-bottom:10px"><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Pix</div>
+      <div style="background:#f5f5f7;border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-family:monospace;font-size:13px;word-break:break-all">${PIX_KEY}</div></div>`;
+    document.getElementById('paymentModal').classList.add('open');
+  }
 }
 
 function logout() {
@@ -592,6 +698,12 @@ function switchAuthTab(tab) {
   document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
 }
 
+function choosePlan(plan) {
+  ['Free','Pro','Business'].forEach(p => document.getElementById('plan'+p).classList.remove('active'));
+  document.getElementById('plan' + plan.charAt(0).toUpperCase() + plan.slice(1)).classList.add('active');
+  document.getElementById('ePlano').value = plan;
+}
+
 function switchToEmpresa() {
   closeModal('authModal');
   document.getElementById('empresaAlert').className = 'alert';
@@ -612,10 +724,30 @@ function showAlert(id, type, msg) {
 // =====================================================
 function render() {
   let list = [...jobs];
-  const s   = document.getElementById('searchInput').value.toLowerCase();
-  const loc = document.getElementById('locFilter').value;
-  if (s)   list = list.filter(j => j.title.toLowerCase().includes(s) || j.desc.toLowerCase().includes(s) || j.tags.some(t => t.toLowerCase().includes(s)));
-  if (loc) list = list.filter(j => j.location === loc || j.location === 'Remoto');
+  const s       = document.getElementById('searchInput').value.toLowerCase();
+  const country = document.getElementById('countryFilter')?.value || '';
+  const state   = document.getElementById('stateFilter')?.value || '';
+  if (s) list = list.filter(j =>
+    j.title.toLowerCase().includes(s) ||
+    j.desc.toLowerCase().includes(s)  ||
+    j.tags.some(t => t.toLowerCase().includes(s))
+  );
+  if (country) {
+    const kws = COUNTRY_KEYWORDS[country] || [];
+    list = list.filter(j => {
+      const loc = (j.location || '').toLowerCase();
+      const det = (j.details  || '').toLowerCase();
+      // Vagas "Remoto/Remote" sempre passam; o resto filtra por keywords do país
+      if (loc === 'remoto' || loc === 'remote') return true;
+      return kws.some(k => loc.includes(k) || det.includes(k));
+    });
+  }
+  if (state) {
+    list = list.filter(j => {
+      const loc = (j.location || '').toLowerCase();
+      return loc.includes(state.toLowerCase()) || loc === 'remoto' || loc === 'remote';
+    });
+  }
   if (cat !== 'all') list = list.filter(j => j.category === cat);
   if (sortDir === 'asc')  list.sort((a,b) => a.payNum - b.payNum);
   else if (sortDir === 'desc') list.sort((a,b) => b.payNum - a.payNum);
@@ -626,8 +758,7 @@ function render() {
   try {
     const users = JSON.parse(localStorage.getItem('gf_users')||'[]');
     const professionals = users.filter(u => u.type === 'user').length;
-    // Soma 24 base fictícia + reais
-    document.getElementById('sUsuarios').textContent = 24 + professionals;
+    document.getElementById('sUsuarios').textContent = professionals || '—';
   } catch(e) {}
 
   const loggedIn = !!currentUser;
@@ -746,6 +877,7 @@ function submitPost() {
     urgency: 'new', avatar: Math.floor(Math.random()*AVG.length), posted: 'agora mesmo'
   };
   jobs.unshift(newJob);
+  const localPosts = JSON.parse(localStorage.getItem('gf_local_posts') || '[]');
   localPosts.unshift(newJob);
   localStorage.setItem('gf_local_posts', JSON.stringify(localPosts));
   
@@ -784,15 +916,6 @@ fetch('https://raw.githubusercontent.com/facincanitech/GetFreelas/main/data/free
     jobs = [];
     render();
   });
-
-// =====================================================
-// INIT
-// =====================================================
-try {
-  const users = JSON.parse(localStorage.getItem('gf_users')||'[]');
-  const profCount = users.filter(u => u.type === 'user').length;
-  document.getElementById('sUsuarios').textContent = profCount || '—';
-} catch(e) {}
 
 loadSession();
 updateAuthUI();

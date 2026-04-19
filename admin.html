@@ -175,9 +175,9 @@
   <!-- STATS -->
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-label">Usuários cadastrados</div><div class="stat-value blue" id="stUsers">—</div></div>
-    <div class="stat-card"><div class="stat-label">Empresas verificadas</div><div class="stat-value green" id="stVerified">—</div></div>
+    <div class="stat-card"><div class="stat-label">Empresas (total)</div><div class="stat-value green" id="stVerified">—</div></div>
     <div class="stat-card"><div class="stat-label">Empresas pendentes</div><div class="stat-value yellow" id="stPending">—</div></div>
-    <div class="stat-card"><div class="stat-label">Vagas para aprovar</div><div class="stat-value red" id="stJobs">—</div></div>
+    <div class="stat-card"><div class="stat-label">Vagas no site</div><div class="stat-value red" id="stJobs">—</div></div>
   </div>
 
   <!-- TABS -->
@@ -498,11 +498,9 @@ function renderAll() {
   const vagas     = allIssues.filter(i => getLabels(i).includes('vaga-pendente') || getLabels(i).includes('vaga-empresa'));
   const pendentes = empresas.filter(i => getLabels(i).includes('pendente') && i.state === 'open');
 
-  // Stats - Agora somando dados locais do index se necessário para não ficar vazio
-  document.getElementById('stUsers').textContent    = usuarios.length;
-  document.getElementById('stVerified').textContent = empresas.filter(i => getLabels(i).includes('verificado')).length;
-  document.getElementById('stPending').textContent  = pendentes.length;
-  document.getElementById('stJobs').textContent     = vagas.length;
+  document.getElementById('stUsers').textContent    = usuarios.length || '0';
+  document.getElementById('stVerified').textContent = empresas.length || '0';
+  document.getElementById('stPending').textContent  = pendentes.length || '0';
 
   // Tab counts
   document.getElementById('tcEmpresas').textContent = empresas.length;
@@ -512,9 +510,22 @@ function renderAll() {
   renderEmpresas(empresas);
   renderVagas(vagas);
   renderUsuarios(usuarios);
+
+  // Vagas no site: busca do GitHub raw (sem token)
+  const c = getCfg();
+  if (c.siteRepo) {
+    fetch(`https://raw.githubusercontent.com/${c.siteRepo}/main/data/freelas.json`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data) document.getElementById('stJobs').textContent = data.total || (data.freelas||[]).length || '0';
+      })
+      .catch(() => {});
+  }
 }
 
 // ==================== RENDER EMPRESAS ====================
+const PLAN_LABELS = { free: { label: 'Grátis', cls: 'pill-new' }, pro: { label: 'Pro', cls: 'pill-empresa' }, business: { label: 'Business ⭐', cls: 'pill-verified' } };
+
 function renderEmpresas(list) {
   if (!list.length) {
     document.getElementById('empresasContent').innerHTML = '<div class="empty-state"><div class="empty-icon">🏢</div><div>Nenhuma empresa cadastrada ainda.</div></div>';
@@ -524,7 +535,7 @@ function renderEmpresas(list) {
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th>#</th><th>Empresa</th><th>Status</th><th>Data</th><th>Ações</th>
+          <th>#</th><th>Empresa</th><th>Plano</th><th>Status</th><th>Data</th><th>Ações</th>
         </tr></thead>
         <tbody>
           ${list.map(i => {
@@ -534,9 +545,22 @@ function renderEmpresas(list) {
             const pill = verified ? 'pill-verified' : rejected ? 'pill-rejected' : 'pill-pending';
             const status = verified ? '✓ Verificada' : rejected ? '✗ Rejeitada' : '⏳ Pendente';
             const date = new Date(i.created_at).toLocaleDateString('pt-BR');
+            // Plano: lê do user local se for local
+            let plano = 'free', planStatus = 'ativo';
+            if (i.number >= 90000) {
+              const users = JSON.parse(localStorage.getItem('gf_users')||'[]');
+              const u = users[i.number - 90000];
+              if (u) { plano = u.plano || 'free'; planStatus = u.planStatus || 'ativo'; }
+            }
+            const pl = PLAN_LABELS[plano] || PLAN_LABELS.free;
+            const pagamentoPendente = plano !== 'free' && planStatus === 'aguardando_pagamento';
             return `<tr>
               <td style="color:var(--muted);font-size:11px">#${i.number}</td>
               <td><strong>${i.title.replace('🏢 Nova empresa: ','')}</strong></td>
+              <td>
+                <span class="pill ${pl.cls}">${pl.label}</span>
+                ${pagamentoPendente ? '<span class="pill pill-pending" style="margin-left:4px">💳 Pgto pendente</span>' : ''}
+              </td>
               <td><span class="pill ${pill}">${status}</span></td>
               <td style="color:var(--muted)">${date}</td>
               <td><div class="td-actions">
@@ -545,12 +569,27 @@ function renderEmpresas(list) {
                   <button class="btn btn-success btn-sm" onclick="verifyEmpresa(${i.number})">✓ Verificar</button>
                   <button class="btn btn-danger btn-sm" onclick="rejectEmpresa(${i.number})">✗ Rejeitar</button>
                 ` : ''}
+                ${pagamentoPendente && i.number >= 90000 ? `
+                  <button class="btn btn-warning btn-sm" onclick="confirmPayment(${i.number})">💳 Confirmar pgto</button>
+                ` : ''}
               </div></td>
             </tr>`;
           }).join('')}
         </tbody>
       </table>
     </div>`;
+}
+
+function confirmPayment(num) {
+  if (!confirm('Confirmar pagamento recebido para esta empresa?')) return;
+  const users = JSON.parse(localStorage.getItem('gf_users')||'[]');
+  const idx = num - 90000;
+  if (users[idx]) {
+    users[idx].planStatus = 'ativo';
+    localStorage.setItem('gf_users', JSON.stringify(users));
+    toast('✓ Pagamento confirmado! Plano ativado.', 'ok');
+    loadIssues();
+  }
 }
 
 // ==================== RENDER VAGAS ====================
