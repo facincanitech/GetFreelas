@@ -355,6 +355,12 @@ async function sbUpdate(table, id, data) {
     body: JSON.stringify(data)
   });
 }
+async function sbDelete(table, id) {
+  await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
+  });
+}
 
 const DEFAULTS = {
   token:    '',
@@ -606,8 +612,14 @@ function renderEmpresas(list) {
                   <button class="btn btn-success btn-sm" onclick="verifyEmpresa(${i.number})">✓ Verificar</button>
                   <button class="btn btn-danger btn-sm" onclick="rejectEmpresa(${i.number})">✗ Rejeitar</button>
                 ` : ''}
+                ${verified || rejected ? `
+                  <button class="btn btn-ghost btn-sm" onclick="resetEmpresa(${i.number})">↺ Resetar</button>
+                ` : ''}
                 ${pagamentoPendente && i.number >= 90000 ? `
                   <button class="btn btn-warning btn-sm" onclick="confirmPayment(${i.number})">💳 Confirmar pgto</button>
+                ` : ''}
+                ${i.number >= 70000 && i.number < 80000 ? `
+                  <button class="btn btn-danger btn-sm" onclick="deleteEmpresa(${i.number})" style="opacity:.6">🗑</button>
                 ` : ''}
               </div></td>
             </tr>`;
@@ -615,6 +627,25 @@ function renderEmpresas(list) {
         </tbody>
       </table>
     </div>`;
+}
+
+async function resetEmpresa(num) {
+  if (num >= 70000 && num < 80000) {
+    const issue = allIssues.find(i => i.number === num);
+    if (issue?._sbData?.id) await sbUpdate('empresas', issue._sbData.id, { status: 'pendente' });
+    toast('Status resetado para pendente.', 'ok');
+    loadIssues();
+  }
+}
+
+async function deleteEmpresa(num) {
+  if (!confirm('Excluir esta empresa permanentemente?')) return;
+  const issue = allIssues.find(i => i.number === num);
+  if (issue?._sbData?.id) {
+    await sbDelete('empresas', issue._sbData.id);
+    toast('Empresa excluída.', 'err');
+    loadIssues();
+  }
 }
 
 function confirmPayment(num) {
