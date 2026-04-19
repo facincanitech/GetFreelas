@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-19T16:16:19.198760+00:00",
+  "updated_at": "2026-04-19T16:24:38.439241+00:00",
   "total": 80,
   "freelas": [
     {
@@ -24,7 +24,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 4,
+      "avatar": 2,
       "posted": "há 2 dias",
       "score_ia": 10
     },
@@ -76,7 +76,7 @@
       ],
       "location": "Remoto",
       "urgency": "new",
-      "avatar": 1,
+      "avatar": 5,
       "posted": "há 1 dia",
       "score_ia": 8
     },
@@ -102,7 +102,7 @@
       ],
       "location": "Remoto",
       "urgency": "new",
-      "avatar": 5,
+      "avatar": 4,
       "posted": "há 1 dia",
       "score_ia": 8
     },
@@ -128,7 +128,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 0,
+      "avatar": 4,
       "posted": "há 2 dias",
       "score_ia": 8
     },
@@ -154,7 +154,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 0,
+      "avatar": 4,
       "posted": "há 3 dias",
       "score_ia": 8
     },
@@ -180,7 +180,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 1,
+      "avatar": 0,
       "posted": "recente",
       "score_ia": 8
     },
@@ -206,7 +206,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 4,
+      "avatar": 3,
       "posted": "recente",
       "score_ia": 8
     },
@@ -232,7 +232,7 @@
       ],
       "location": "Remoto",
       "urgency": "new",
-      "avatar": 3,
+      "avatar": 2,
       "posted": "há 1 dia",
       "score_ia": 7
     },
@@ -258,7 +258,7 @@
       ],
       "location": "Remoto",
       "urgency": "new",
-      "avatar": 4,
+      "avatar": 3,
       "posted": "há 1 dia",
       "score_ia": 7
     },
@@ -284,7 +284,7 @@
       ],
       "location": "Remoto",
       "urgency": "new",
-      "avatar": 0,
+      "avatar": 3,
       "posted": "há 1 dia",
       "score_ia": 7
     },
@@ -310,7 +310,7 @@
       ],
       "location": "Remoto",
       "urgency": "new",
-      "avatar": 5,
+      "avatar": 3,
       "posted": "há 1 dia",
       "score_ia": 7
     },
@@ -336,7 +336,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 5,
+      "avatar": 3,
       "posted": "há 2 dias",
       "score_ia": 7
     },
@@ -362,7 +362,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 1,
+      "avatar": 4,
       "posted": "há 2 dias",
       "score_ia": 7
     },
@@ -388,7 +388,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 2,
+      "avatar": 3,
       "posted": "há 3 dias",
       "score_ia": 7
     },
@@ -414,7 +414,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 3,
+      "avatar": 2,
       "posted": "há 3 dias",
       "score_ia": 7
     },
@@ -440,7 +440,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 0,
+      "avatar": 4,
       "posted": "há 3 dias",
       "score_ia": 7
     },
@@ -466,7 +466,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 1,
+      "avatar": 3,
       "posted": "há 4 dias",
       "score_ia": 7
     },
@@ -492,7 +492,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 5,
+      "avatar": 3,
       "posted": "há 4 dias",
       "score_ia": 7
     },
@@ -515,7 +515,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 5,
+      "avatar": 3,
       "posted": "há 4 dias",
       "score_ia": 7
     },
@@ -593,7 +593,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 4,
+      "avatar": 5,
       "posted": "há 5 dias",
       "score_ia": 7
     },
@@ -619,7 +619,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 0,
+      "avatar": 3,
       "posted": "há 5 dias",
       "score_ia": 7
     },
@@ -645,7 +645,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 3,
+      "avatar": 4,
       "posted": "recente",
       "score_ia": 7
     },
@@ -693,7 +693,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 2,
+      "avatar": 0,
       "posted": "recente",
       "score_ia": 7
     },
@@ -717,7 +717,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 5,
+      "avatar": 0,
       "posted": "recente",
       "score_ia": 7
     },
@@ -743,7 +743,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 5,
+      "avatar": 1,
       "posted": "recente",
       "score_ia": 7
     },
@@ -769,7 +769,7 @@
       ],
       "location": "Remoto",
       "urgency": "new",
-      "avatar": 1,
+      "avatar": 4,
       "posted": "há 1 dia",
       "score_ia": 6
     },
@@ -795,7 +795,7 @@
       ],
       "location": "Remoto",
       "urgency": "new",
-      "avatar": 2,
+      "avatar": 4,
       "posted": "há 1 dia",
       "score_ia": 6
     },
@@ -821,7 +821,7 @@
       ],
       "location": "Remoto",
       "urgency": "new",
-      "avatar": 2,
+      "avatar": 1,
       "posted": "há 1 dia",
       "score_ia": 6
     },
@@ -846,7 +846,7 @@
       ],
       "location": "Remoto",
       "urgency": "new",
-      "avatar": 5,
+      "avatar": 3,
       "posted": "há 1 dia",
       "score_ia": 6
     },
@@ -897,7 +897,7 @@
       ],
       "location": "Remoto",
       "urgency": "new",
-      "avatar": 3,
+      "avatar": 4,
       "posted": "há 1 dia",
       "score_ia": 6
     },
@@ -923,7 +923,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 3,
+      "avatar": 2,
       "posted": "há 2 dias",
       "score_ia": 6
     },
@@ -949,7 +949,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 3,
+      "avatar": 2,
       "posted": "há 2 dias",
       "score_ia": 6
     },
@@ -975,7 +975,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 2,
+      "avatar": 0,
       "posted": "há 2 dias",
       "score_ia": 6
     },
@@ -1001,7 +1001,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 3,
+      "avatar": 2,
       "posted": "há 2 dias",
       "score_ia": 6
     },
@@ -1027,7 +1027,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 1,
+      "avatar": 0,
       "posted": "há 2 dias",
       "score_ia": 6
     },
@@ -1053,7 +1053,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 3,
+      "avatar": 5,
       "posted": "há 2 dias",
       "score_ia": 6
     },
@@ -1079,7 +1079,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 3,
+      "avatar": 2,
       "posted": "há 2 dias",
       "score_ia": 6
     },
@@ -1105,7 +1105,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 3,
+      "avatar": 4,
       "posted": "há 2 dias",
       "score_ia": 6
     },
@@ -1130,7 +1130,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 5,
+      "avatar": 2,
       "posted": "há 2 dias",
       "score_ia": 6
     },
@@ -1156,7 +1156,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 4,
+      "avatar": 3,
       "posted": "há 3 dias",
       "score_ia": 6
     },
@@ -1182,7 +1182,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 5,
+      "avatar": 3,
       "posted": "há 3 dias",
       "score_ia": 6
     },
@@ -1208,7 +1208,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 2,
+      "avatar": 0,
       "posted": "há 3 dias",
       "score_ia": 6
     },
@@ -1260,7 +1260,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 1,
+      "avatar": 5,
       "posted": "há 3 dias",
       "score_ia": 6
     },
@@ -1286,7 +1286,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 2,
+      "avatar": 3,
       "posted": "há 3 dias",
       "score_ia": 6
     },
@@ -1312,7 +1312,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 1,
+      "avatar": 5,
       "posted": "há 3 dias",
       "score_ia": 6
     },
@@ -1338,7 +1338,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 2,
+      "avatar": 0,
       "posted": "há 4 dias",
       "score_ia": 6
     },
@@ -1364,7 +1364,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 2,
+      "avatar": 5,
       "posted": "há 4 dias",
       "score_ia": 6
     },
@@ -1390,7 +1390,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 4,
+      "avatar": 0,
       "posted": "há 4 dias",
       "score_ia": 6
     },
@@ -1416,7 +1416,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 5,
+      "avatar": 3,
       "posted": "há 4 dias",
       "score_ia": 6
     },
@@ -1442,7 +1442,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 4,
+      "avatar": 2,
       "posted": "há 4 dias",
       "score_ia": 6
     },
@@ -1468,7 +1468,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 0,
+      "avatar": 4,
       "posted": "há 4 dias",
       "score_ia": 6
     },
@@ -1494,7 +1494,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 5,
+      "avatar": 3,
       "posted": "há 4 dias",
       "score_ia": 6
     },
@@ -1520,7 +1520,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 5,
+      "avatar": 3,
       "posted": "há 4 dias",
       "score_ia": 6
     },
@@ -1544,7 +1544,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 5,
+      "avatar": 4,
       "posted": "há 4 dias",
       "score_ia": 6
     },
@@ -1570,7 +1570,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 5,
+      "avatar": 3,
       "posted": "há 5 dias",
       "score_ia": 6
     },
@@ -1596,7 +1596,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 2,
+      "avatar": 4,
       "posted": "há 5 dias",
       "score_ia": 6
     },
@@ -1622,7 +1622,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 5,
+      "avatar": 1,
       "posted": "há 5 dias",
       "score_ia": 6
     },
@@ -1648,7 +1648,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 3,
+      "avatar": 5,
       "posted": "há 5 dias",
       "score_ia": 6
     },
@@ -1674,7 +1674,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 2,
+      "avatar": 1,
       "posted": "há 6 dias",
       "score_ia": 6
     },
@@ -1700,7 +1700,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 1,
+      "avatar": 3,
       "posted": "há 6 dias",
       "score_ia": 6
     },
@@ -1726,7 +1726,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 0,
+      "avatar": 4,
       "posted": "recente",
       "score_ia": 6
     },
@@ -1752,7 +1752,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 4,
+      "avatar": 1,
       "posted": "recente",
       "score_ia": 6
     },
@@ -1778,7 +1778,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 0,
+      "avatar": 4,
       "posted": "recente",
       "score_ia": 6
     },
@@ -1804,7 +1804,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 0,
+      "avatar": 5,
       "posted": "há 2 dias",
       "score_ia": 5
     },
@@ -1830,7 +1830,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 5,
+      "avatar": 1,
       "posted": "há 2 dias",
       "score_ia": 5
     },
@@ -1855,7 +1855,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 1,
+      "avatar": 5,
       "posted": "há 2 dias",
       "score_ia": 5
     },
@@ -1881,7 +1881,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 1,
+      "avatar": 5,
       "posted": "há 2 dias",
       "score_ia": 5
     },
@@ -1907,7 +1907,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 2,
+      "avatar": 4,
       "posted": "há 2 dias",
       "score_ia": 5
     },
@@ -1933,7 +1933,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 1,
+      "avatar": 4,
       "posted": "há 2 dias",
       "score_ia": 5
     },
@@ -1959,7 +1959,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 0,
+      "avatar": 5,
       "posted": "há 2 dias",
       "score_ia": 5
     },
@@ -1983,7 +1983,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 5,
+      "avatar": 4,
       "posted": "há 2 dias",
       "score_ia": 5
     },
@@ -2009,7 +2009,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 5,
+      "avatar": 4,
       "posted": "há 2 dias",
       "score_ia": 5
     },
@@ -2035,7 +2035,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 3,
+      "avatar": 2,
       "posted": "há 2 dias",
       "score_ia": 5
     },
@@ -2061,7 +2061,7 @@
       ],
       "location": "Remoto",
       "urgency": "normal",
-      "avatar": 4,
+      "avatar": 2,
       "posted": "há 2 dias",
       "score_ia": 5
     }
