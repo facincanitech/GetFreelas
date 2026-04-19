@@ -8,10 +8,15 @@ import json
 import re
 import hashlib
 import base64
+import sys
 import urllib.request
 import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
+
+# Fix encoding no Windows
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 # ─────────────────────────────────────────
 # CONFIG
