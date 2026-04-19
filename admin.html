@@ -186,6 +186,7 @@
     <button class="tab" id="tabVagas" onclick="openTab('vagas')">📋 Vagas pendentes <span class="tab-count alert" id="tcVagas">0</span></button>
     <button class="tab" id="tabUsuarios" onclick="openTab('usuarios')">👤 Usuários <span class="tab-count" id="tcUsuarios">0</span></button>
     <button class="tab" id="tabPush" onclick="openTab('push');loadRemoteJSON()">🚀 Publicar</button>
+    <button class="tab" id="tabScraper" onclick="openTab('scraper');checkServer()">🤖 Scraper</button>
     <button class="tab" id="tabConfig" onclick="openTab('config')">⚙ Config</button>
   </div>
 
@@ -240,6 +241,46 @@
       <div class="push-title">📋 Preview do freelas.json</div>
       <div class="push-sub">JSON que será enviado ao GitHub Pages.</div>
       <pre style="font-size:11px;color:var(--muted);max-height:300px;overflow:auto;background:var(--card);padding:12px;border-radius:6px" id="jsonPreview">Clique em "Gerar freelas.json" para visualizar.</pre>
+    </div>
+  </div>
+
+  <!-- ===== SCRAPER ===== -->
+  <div id="panelScraper" style="display:none">
+    <div class="section-header">
+      <div class="section-title">🤖 Scraper de vagas</div>
+    </div>
+
+    <div class="push-box" id="scraperStatusBox">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div class="push-title">Servidor local</div>
+          <div class="push-sub" id="scraperServerStatus">Verificando conexão com servidor...</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="btnRunScraper" onclick="runScraper()" disabled>▶ Rodar agora</button>
+          <button class="btn btn-ghost btn-sm" onclick="checkServer()">↺ Verificar</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+        <div class="stat-card">
+          <div class="stat-label">Último scrape</div>
+          <div style="font-size:14px;font-weight:700" id="scraperLastRun">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Vagas coletadas</div>
+          <div style="font-size:24px;font-weight:700;color:#58a6ff" id="scraperLastJobs">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Status</div>
+          <div style="font-size:14px;font-weight:700" id="scraperLastStatus">—</div>
+        </div>
+      </div>
+
+      <div class="push-title" style="margin-bottom:6px">Log</div>
+      <div class="push-status" id="scraperLog" style="min-height:180px;max-height:320px;overflow-y:auto">
+        Abra o painel via <strong>abrir_painel.bat</strong> para ativar o servidor local.
+      </div>
     </div>
   </div>
 
@@ -792,7 +833,79 @@ async function pushToGitHub() {
 // =====================================================
 // TABS
 // =====================================================
-const panels = ['Empresas','Vagas','Usuarios','Push','Config'];
+const panels = ['Empresas','Vagas','Usuarios','Push','Scraper','Config'];
+
+// =====================================================
+// SCRAPER — comunica com server.py local
+// =====================================================
+const SCRAPER_URL = 'http://localhost:8765';
+let scraperPollTimer = null;
+
+async function checkServer() {
+  const status = document.getElementById('scraperServerStatus');
+  const btn    = document.getElementById('btnRunScraper');
+  try {
+    const r = await fetch(`${SCRAPER_URL}/status`, { signal: AbortSignal.timeout(2000) });
+    const d = await r.json();
+    status.textContent = '✓ Servidor online';
+    status.style.color = 'var(--green)';
+    btn.disabled = d.running;
+    btn.textContent = d.running ? '⏳ Rodando...' : '▶ Rodar agora';
+    updateScraperUI(d);
+  } catch(e) {
+    status.textContent = '✗ Servidor offline — abra via abrir_painel.bat';
+    status.style.color = 'var(--red)';
+    btn.disabled = true;
+    btn.textContent = '▶ Rodar agora';
+  }
+}
+
+function updateScraperUI(d) {
+  document.getElementById('scraperLastRun').textContent    = d.last_run    || '—';
+  document.getElementById('scraperLastJobs').textContent   = d.last_jobs   || '—';
+  const st = document.getElementById('scraperLastStatus');
+  st.textContent  = d.last_status || '—';
+  st.style.color  = d.last_status === 'ok' ? 'var(--green)' : d.last_status === 'erro' ? 'var(--red)' : 'var(--muted)';
+  if (d.last_log) {
+    const log = document.getElementById('scraperLog');
+    log.textContent = d.last_log;
+    log.scrollTop   = log.scrollHeight;
+  }
+}
+
+async function runScraper() {
+  try {
+    const r = await fetch(`${SCRAPER_URL}/scrape`);
+    const d = await r.json();
+    if (d.ok) {
+      toast('🤖 Scraper iniciado!', 'ok');
+      document.getElementById('btnRunScraper').disabled = true;
+      document.getElementById('btnRunScraper').textContent = '⏳ Rodando...';
+      pollScraper();
+    } else {
+      toast(d.msg, 'err');
+    }
+  } catch(e) {
+    toast('Servidor offline. Abra via abrir_painel.bat', 'err');
+  }
+}
+
+function pollScraper() {
+  clearInterval(scraperPollTimer);
+  scraperPollTimer = setInterval(async () => {
+    try {
+      const r = await fetch(`${SCRAPER_URL}/status`);
+      const d = await r.json();
+      updateScraperUI(d);
+      if (!d.running) {
+        clearInterval(scraperPollTimer);
+        document.getElementById('btnRunScraper').disabled = false;
+        document.getElementById('btnRunScraper').textContent = '▶ Rodar agora';
+        toast(`✓ Scraper concluído — ${d.last_jobs} vagas`, 'ok');
+      }
+    } catch(e) { clearInterval(scraperPollTimer); }
+  }, 2000);
+}
 function openTab(name) {
   panels.forEach(p => {
     document.getElementById(`panel${p}`).style.display = 'none';
@@ -819,6 +932,13 @@ function toast(msg, type='ok') {
 function loadAll() {
   loadConfig();
   loadIssues();
+  // Verifica servidor e dispara scraper automaticamente ao abrir
+  checkServer().then(() => {
+    const status = document.getElementById('scraperServerStatus');
+    if (status && status.style.color !== 'var(--red)') {
+      runScraper();
+    }
+  });
 }
 
 document.querySelectorAll('.modal-overlay').forEach(el =>

@@ -429,66 +429,10 @@
 const ADMIN_EMAIL = 'pezzarine@gmail.com'; // email que recebe notificações de cadastro
 
 // =====================================================
-// DEMO DATA
-// =====================================================
-const AVG = ['#0f6cbd','#8764b8','#107c10','#d13438','#ca5010','#038387'];
-
-const DB = [
-  {id:1,title:"Desenvolvedor React para Landing Page",company:"Agência Fuse",category:"tech",type:"freela",
-   desc:"Preciso de um dev React para criar uma landing page responsiva com animações. Design já está pronto no Figma.",
-   req:"Experiência com React e Tailwind. Diferencial: Framer Motion.",
-   details:"Prazo de 5 dias. Reunião inicial via Meet.",
-   contact:"vagas@agenciafuse.com.br",
-   pay:"R$ 800",payNum:800,payPeriod:"projeto",tags:["React","Figma","Tailwind"],location:"Remoto",urgency:"new",avatar:0,posted:"há 2h"},
-  {id:2,title:"Garçom para Evento Corporativo",company:"Eventos Ágora",category:"eventos",type:"rapido",
-   desc:"Precisamos de 3 garçons para evento corporativo de 200 pessoas. Serviço de buffet, 8h de trabalho.",
-   req:"Experiência anterior em eventos. Apresentação impecável.",
-   details:"Sábado 19/04, das 14h às 22h. Uniforme fornecido.",
-   contact:"(11) 98888-1234",
-   pay:"R$ 180",payNum:180,payPeriod:"dia",tags:["Eventos","Presencial","Urgente"],location:"São Paulo",urgency:"hot",avatar:3,posted:"há 1h"},
-  {id:3,title:"Designer de Identidade Visual",company:"StartupX",category:"design",type:"freela",
-   desc:"Startup em fase inicial busca designer para criação de logo, paleta de cores e guia de marca completo.",
-   req:"Portfólio de identidades visuais. Domínio de Illustrator ou equivalente.",
-   details:"Entrega em 10 dias. Possibilidade de contrato contínuo.",
-   contact:"hello@startupx.io",
-   pay:"R$ 1.200",payNum:1200,payPeriod:"projeto",tags:["Design","Branding","Logo"],location:"Remoto",urgency:"normal",avatar:1,posted:"há 5h"},
-  {id:4,title:"Redator para Blog de Tecnologia",company:"TechBlog BR",category:"texto",type:"freela",
-   desc:"Buscamos redator para produção de 4 artigos/mês sobre tecnologia, IA e startups. Pauta fornecida.",
-   req:"Escrita clara, SEO básico, interesse em tech.",
-   details:"Contrato mensal renovável.",
-   contact:"editorial@techblogbr.com",
-   pay:"R$ 120",payNum:120,payPeriod:"artigo",tags:["SEO","Tech","Escrita"],location:"Remoto",urgency:"normal",avatar:2,posted:"há 8h"},
-  {id:5,title:"Assistente de Estoque — Temporário",company:"Mega Mania",category:"admin",type:"temp",
-   desc:"Precisamos de assistentes para apoio em inventário. Contagem, organização e lançamento no sistema.",
-   req:"Atenção a detalhes, noções de Excel. Disponibilidade integral.",
-   details:"3 semanas (7–28 de maio). CLT temporário.",
-   contact:"rh@megamania.com.br",
-   pay:"R$ 1.800",payNum:1800,payPeriod:"mês",tags:["Estoque","Excel","Presencial"],location:"São Paulo",urgency:"new",avatar:4,posted:"há 3h"},
-  {id:6,title:"Operador de Câmera para Vídeos",company:"Produtora VHS",category:"audio",type:"rapido",
-   desc:"Buscamos operador para gravação de depoimentos e cobertura de evento. 1 dia de trabalho.",
-   req:"Experiência com câmera DSLR/mirrorless. Equipamento próprio é diferencial.",
-   details:"Domingo 20/04, das 9h às 17h. Contrato PJ.",
-   contact:"producao@vhsfilmes.com",
-   pay:"R$ 350",payNum:350,payPeriod:"dia",tags:["Câmera","Vídeo","Presencial"],location:"Rio de Janeiro",urgency:"hot",avatar:5,posted:"há 30min"},
-  {id:7,title:"Pedreiro para Reforma de Banheiro",company:"Família Carvalho",category:"obra",type:"rapido",
-   desc:"Preciso de pedreiro para demolição e assentamento de cerâmica em banheiro de 4m².",
-   req:"Experiência comprovada. Referências de trabalhos anteriores.",
-   details:"2 a 3 dias de trabalho. Material fornecido.",
-   contact:"(31) 97777-5566",
-   pay:"R$ 250",payNum:250,payPeriod:"dia",tags:["Reforma","Cerâmica","Presencial"],location:"Belo Horizonte",urgency:"normal",avatar:0,posted:"há 12h"},
-  {id:8,title:"Entregador Moto — Turno da Tarde",company:"Rango Expresso",category:"delivery",type:"rapido",
-   desc:"Restaurante precisa de motoboy para cobrir turno da tarde. Rotas no raio de 5km.",
-   req:"CNH A. Moto própria. Celular com acesso a apps.",
-   details:"12h às 20h. Pagamento diário. Hoje e amanhã.",
-   contact:"(11) 96666-0099",
-   pay:"R$ 160",payNum:160,payPeriod:"dia",tags:["Moto","Delivery","Urgente"],location:"São Paulo",urgency:"hot",avatar:3,posted:"há 15min"}
-];
-
-// =====================================================
 // STATE
 // =====================================================
-let localPosts = JSON.parse(localStorage.getItem('gf_local_posts') || '[]');
-let jobs = [...DB, ...localPosts], cat = 'all', sortDir = null;
+const AVG = ['#0f6cbd','#8764b8','#107c10','#d13438','#ca5010','#038387'];
+let jobs = [], cat = 'all', sortDir = null;
 let currentUser = null;
 
 const T = {freela:{l:'Freela',c:'b-freela'},rapido:{l:'Rápido',c:'b-rapido'},temp:{l:'Temporário',c:'b-temp'}};
@@ -690,7 +634,10 @@ function render() {
   const g = document.getElementById('grid');
 
   if (!list.length) {
-    g.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><div>Nenhuma vaga encontrada.</div></div>';
+    const msg = jobs.length === 0
+      ? 'As vagas são atualizadas diariamente. Volte em breve!'
+      : 'Nenhuma vaga encontrada para esse filtro.';
+    g.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><div>${msg}</div></div>`;
     return;
   }
 
@@ -734,7 +681,7 @@ function toggleSort() {
 // DETAIL MODAL
 // =====================================================
 function openDetail(id) {
-  const j   = jobs.find(x => x.id === id) || DB.find(x => x.id === id);
+  const j   = jobs.find(x => x.id === id);
   const tp  = T[j.type] || T.freela;
   const ug  = U[j.urgency] || U.normal;
   const loggedIn = !!currentUser;
@@ -833,8 +780,7 @@ fetch('https://raw.githubusercontent.com/facincanitech/getfreelas-data/main/free
     render();
   })
   .catch(() => {
-    // fallback offline: usa DB hardcoded
-    jobs = [...DB];
+    jobs = [];
     render();
   });
 
