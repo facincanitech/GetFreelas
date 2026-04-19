@@ -1,0 +1,1 @@
+Não reutilizar, ou republicar.
