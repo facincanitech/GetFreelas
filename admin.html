@@ -20,7 +20,7 @@
     --radius: 8px;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Segoe UI',-apple-system,system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+  body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 
   /* LOCK SCREEN */
   .lock-screen { position:fixed; inset:0; background:var(--bg); z-index:999; display:flex; align-items:center; justify-content:center; }
@@ -379,26 +379,45 @@ async function ghFetch(path, opts={}) {
 let allIssues = [];
 let approvedJobs = JSON.parse(localStorage.getItem('gf_approved_jobs') || '[]');
 
-async function loadIssues() {
-  const c = getCfg();
-  if (!c.token || !c.repo) {
-    renderEmptyConfig('empresasContent');
-    renderEmptyConfig('vagasContent');
-    renderEmptyConfig('usuariosContent');
-    return;
-  }
+function loadLocalUsers() {
   try {
-    // Busca todas as issues abertas + fechadas (limite 100)
-    const [open, closed] = await Promise.all([
-      ghFetch(`/repos/${c.repo}/issues?state=open&per_page=100`),
-      ghFetch(`/repos/${c.repo}/issues?state=closed&per_page=100`)
-    ]);
-    allIssues = [...(open||[]), ...(closed||[])];
-    renderAll();
-  } catch(e) {
-    toast('Erro ao buscar issues: ' + e.message, 'err');
-    renderError('empresasContent', e.message);
+    const users = JSON.parse(localStorage.getItem('gf_users')||'[]');
+    return users.map((u, i) => {
+      const isEmpresa = u.type === 'empresa';
+      const labels = isEmpresa ? [{name: 'empresa'}] : [{name: 'usuario'}];
+      if (isEmpresa) {
+        if (u.status === 'pendente') labels.push({name: 'pendente'});
+        else if (u.status === 'verificado') labels.push({name: 'verificado'});
+        else if (u.status === 'rejeitado') labels.push({name: 'rejeitado'});
+      }
+      return {
+        number: 90000 + i,
+        title: (isEmpresa ? '🏢 Nova empresa: ' : '👤 Novo usuário: ') + u.name,
+        state: isEmpresa && u.status === 'pendente' ? 'open' : 'closed',
+        labels: labels,
+        created_at: u.createdAt || new Date().toISOString(),
+        body: `**Email:** ${u.email}` + (isEmpresa ? `\n**CNPJ:** ${u.cnpj}\n**Tel:** ${u.tel}\n**Área:** ${u.area}` : '')
+      };
+    });
+  } catch(e) { return []; }
+}
+
+async function loadIssues() {
+  allIssues = loadLocalUsers(); // Load local users
+  const c = getCfg();
+  if (c.token && c.repo) {
+    try {
+      // Busca todas as issues abertas + fechadas (limite 100)
+      const [open, closed] = await Promise.all([
+        ghFetch(`/repos/${c.repo}/issues?state=open&per_page=100`),
+        ghFetch(`/repos/${c.repo}/issues?state=closed&per_page=100`)
+      ]);
+      allIssues = [...allIssues, ...(open||[]), ...(closed||[])];
+    } catch(e) {
+      toast('Erro ao buscar issues: ' + e.message, 'err');
+    }
   }
+  renderAll();
 }
 
 function renderEmptyConfig(id) {
@@ -546,6 +565,14 @@ function renderUsuarios(list) {
 // ACTIONS
 // =====================================================
 async function verifyEmpresa(num) {
+  if (num >= 90000) {
+    const users = JSON.parse(localStorage.getItem('gf_users')||'[]');
+    const idx = num - 90000;
+    if(users[idx]) { users[idx].status = 'verificado'; localStorage.setItem('gf_users', JSON.stringify(users)); }
+    toast('✓ Empresa verificada localmente!', 'ok');
+    loadIssues();
+    return;
+  }
   const c = getCfg();
   try {
     await ghFetch(`/repos/${c.repo}/issues/${num}/labels`, {
@@ -561,6 +588,14 @@ async function verifyEmpresa(num) {
 
 async function rejectEmpresa(num) {
   if (!confirm('Rejeitar esta empresa?')) return;
+  if (num >= 90000) {
+    const users = JSON.parse(localStorage.getItem('gf_users')||'[]');
+    const idx = num - 90000;
+    if(users[idx]) { users[idx].status = 'rejeitado'; localStorage.setItem('gf_users', JSON.stringify(users)); }
+    toast('Empresa rejeitada localmente.', 'err');
+    loadIssues();
+    return;
+  }
   const c = getCfg();
   try {
     await ghFetch(`/repos/${c.repo}/issues/${num}/labels`, { method: 'POST', body: JSON.stringify({ labels: ['rejeitado'] }) });

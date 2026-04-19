@@ -677,6 +677,11 @@ function render() {
 
   document.getElementById('sVagas').textContent  = list.length;
   document.getElementById('countLbl').textContent = list.length;
+  
+  try {
+    const users = JSON.parse(localStorage.getItem('gf_users')||'[]');
+    if (users.length > 0) document.getElementById('sUsuarios').textContent = users.length;
+  } catch(e) {}
 
   const loggedIn = !!currentUser;
   const g = document.getElementById('grid');
