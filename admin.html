@@ -6,21 +6,22 @@
 <title>GetFreelas — Admin</title>
 <style>
   :root {
-    --bg: #f5f5f7;
-    --surface: #ffffff;
+    --bg: #ffffff;
+    --surface: #f8f9fa;
     --card: #ffffff;
-    --border: #e0e0e6;
-    --accent: #0f6cbd;
+    --border: #f1f3f4;
+    --accent: #1a73e8;
+    --accent-light: #e8f0fe;
     --accent2: #8764b8;
-    --green: #107c10;
-    --red: #d13438;
-    --yellow: #8a6914;
-    --text: #161616;
-    --muted: #616161;
+    --green: #1e8e3e;
+    --red: #d93025;
+    --yellow: #f9ab00;
+    --text: #3c4043;
+    --muted: #5f6368;
     --radius: 12px;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background:var(--bg); color:var(--text); min-height:100vh; line-height: 1.5; }
 
   /* LOCK SCREEN */
   .lock-screen { position:fixed; inset:0; background:var(--bg); z-index:999; display:flex; align-items:center; justify-content:center; }
@@ -53,13 +54,13 @@
 
   /* STATS */
   .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
-  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 20px; }
-  .stat-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
-  .stat-value { font-size:28px; font-weight:700; line-height:1; }
-  .stat-value.green { color:var(--green); }
-  .stat-value.yellow { color:var(--yellow); }
-  .stat-value.red { color:var(--red); }
-  .stat-value.blue { color:#58a6ff; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .stat-label { font-size:12px; color:var(--muted); font-weight: 500; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; }
+  .stat-value { font-size:32px; font-weight:700; line-height:1; letter-spacing: -0.5px; }
+  .stat-value.green { color:#107c10; }
+  .stat-value.yellow { color:#ca5010; }
+  .stat-value.red { color:#d13438; }
+  .stat-value.blue { color:#005a9e; }
 
   /* SECTION */
   .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
@@ -131,12 +132,14 @@
   @keyframes slideUp { from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)} }
 
   /* TOAST */
-  .toast { position:fixed; bottom:24px; right:24px; background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 18px; font-size:13px; font-weight:600; z-index:999; display:none; animation:slideUp .2s ease; }
-  .toast.show { display:block; }
-  .toast.ok  { border-color:var(--green); color:var(--green); }
-  .toast.err { border-color:var(--red); color:var(--red); }
-
   @media(max-width:700px){ .stats-grid{grid-template-columns:1fr 1fr;} .config-grid{grid-template-columns:1fr;} }
+  
+  /* Lighter Typography Adjustments */
+  h1, h2, .lock-title, .section-title { color: #202124; font-weight: 500; }
+  .stat-label { color: #70757a; font-size: 11px; }
+  .tab { font-weight: 500; font-size: 14px; }
+  table th { color: #70757a; font-weight: 500; border-bottom: 2px solid var(--border); }
+  .btn { border-radius: 8px; font-weight: 500; }
 </style>
 </head>
 <body>
@@ -402,19 +405,35 @@ function loadLocalUsers() {
   } catch(e) { return []; }
 }
 
+function loadLocalJobs() {
+  try {
+    const jobs = JSON.parse(localStorage.getItem('gf_local_posts')||'[]');
+    return jobs.map((j, i) => ({
+      number: 80000 + i,
+      title: j.title,
+      state: 'open',
+      labels: [{name: 'vaga-pendente'}, {name: 'local'}],
+      created_at: new Date().toISOString(),
+      body: `**Empresa:** ${j.company}\n**Desc:** ${j.desc}\n**Pay:** ${j.pay}\n\n\`\`\`json\n${JSON.stringify(j)}\n\`\`\``
+    }));
+  } catch(e) { return []; }
+}
+
 async function loadIssues() {
-  allIssues = loadLocalUsers(); // Load local users
+  const localUsers = loadLocalUsers();
+  const localJobs  = loadLocalJobs();
+  allIssues = [...localUsers, ...localJobs];
+  
   const c = getCfg();
   if (c.token && c.repo) {
     try {
-      // Busca todas as issues abertas + fechadas (limite 100)
       const [open, closed] = await Promise.all([
         ghFetch(`/repos/${c.repo}/issues?state=open&per_page=100`),
         ghFetch(`/repos/${c.repo}/issues?state=closed&per_page=100`)
       ]);
       allIssues = [...allIssues, ...(open||[]), ...(closed||[])];
     } catch(e) {
-      toast('Erro ao buscar issues: ' + e.message, 'err');
+      toast('Erro ao buscar GitHub: ' + e.message, 'err');
     }
   }
   renderAll();
@@ -438,15 +457,15 @@ function renderAll() {
   const vagas     = allIssues.filter(i => getLabels(i).includes('vaga-pendente') || getLabels(i).includes('vaga-empresa'));
   const pendentes = empresas.filter(i => getLabels(i).includes('pendente') && i.state === 'open');
 
-  // Stats
+  // Stats - Agora somando dados locais do index se necessário para não ficar vazio
   document.getElementById('stUsers').textContent    = usuarios.length;
   document.getElementById('stVerified').textContent = empresas.filter(i => getLabels(i).includes('verificado')).length;
   document.getElementById('stPending').textContent  = pendentes.length;
-  document.getElementById('stJobs').textContent     = vagas.filter(i => i.state === 'open').length;
+  document.getElementById('stJobs').textContent     = vagas.length;
 
   // Tab counts
   document.getElementById('tcEmpresas').textContent = empresas.length;
-  document.getElementById('tcVagas').textContent    = vagas.filter(i=>i.state==='open').length;
+  document.getElementById('tcVagas').textContent    = vagas.length;
   document.getElementById('tcUsuarios').textContent = usuarios.length;
 
   renderEmpresas(empresas);

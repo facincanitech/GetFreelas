@@ -487,7 +487,8 @@ const DB = [
 // =====================================================
 // STATE
 // =====================================================
-let jobs = [...DB], cat = 'all', sortDir = null;
+let localPosts = JSON.parse(localStorage.getItem('gf_local_posts') || '[]');
+let jobs = [...DB, ...localPosts], cat = 'all', sortDir = null;
 let currentUser = null;
 
 const T = {freela:{l:'Freela',c:'b-freela'},rapido:{l:'Rápido',c:'b-rapido'},temp:{l:'Temporário',c:'b-temp'}};
@@ -680,7 +681,9 @@ function render() {
   
   try {
     const users = JSON.parse(localStorage.getItem('gf_users')||'[]');
-    if (users.length > 0) document.getElementById('sUsuarios').textContent = users.length;
+    const professionals = users.filter(u => u.type === 'user').length;
+    // Soma 24 base fictícia + reais
+    document.getElementById('sUsuarios').textContent = 24 + professionals;
   } catch(e) {}
 
   const loggedIn = !!currentUser;
@@ -783,7 +786,7 @@ function submitPost() {
   const desc  = document.getElementById('pDesc').value.trim();
   const pay   = document.getElementById('pPay').value.trim();
   if (!title || !co || !desc || !pay) { alert('Preencha os campos obrigatórios *'); return; }
-  jobs.unshift({
+  const newJob = {
     id: Date.now(), title, company: co,
     category: document.getElementById('pCat').value,
     type:     document.getElementById('pType').value,
@@ -794,7 +797,11 @@ function submitPost() {
     tags: (document.getElementById('pTags').value || '').split(',').map(t=>t.trim()).filter(Boolean),
     location: document.getElementById('pLoc').value || 'A combinar',
     urgency: 'new', avatar: Math.floor(Math.random()*AVG.length), posted: 'agora mesmo'
-  });
+  };
+  jobs.unshift(newJob);
+  localPosts.unshift(newJob);
+  localStorage.setItem('gf_local_posts', JSON.stringify(localPosts));
+  
   document.getElementById('sHoje').textContent = parseInt(document.getElementById('sHoje').textContent || 0) + 1;
   closeModal('postModal');
   ['pTitle','pCo','pDesc','pReq','pPay','pLoc','pTags','pContact'].forEach(id => document.getElementById(id).value = '');
@@ -831,8 +838,23 @@ fetch('https://raw.githubusercontent.com/facincanitech/getfreelas-data/main/free
     render();
   });
 
-const users = getUsers();
-document.getElementById('sUsuarios').textContent = users.length || '—';
+// =====================================================
+// INIT
+// =====================================================
+try {
+  const users = JSON.parse(localStorage.getItem('gf_users')||'[]');
+  document.getElementById('sUsuarios').textContent = 24 + users.filter(u => u.type === 'user').length;
+  
+  const todayCount = localPosts.filter(p => {
+    const d = new Date(p.id);
+    return d.toDateString() === new Date().toDateString();
+  }).length;
+  document.getElementById('sHoje').textContent = todayCount > 0 ? todayCount : "3"; // 3 mock se vazio
+} catch(e) {}
+
+loadSession();
+updateAuthUI();
+render();
 </script>
 </body>
 </html>
