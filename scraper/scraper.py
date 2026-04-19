@@ -33,7 +33,8 @@ GH_BRANCH = CFG.get("github_branch", "main")
 MAX_JOBS  = CFG.get("max_jobs", 80)
 SCORE_MIN = CFG.get("score_minimo", 3)
 
-JOOBLE_KEY  = CFG.get("jooble_api_key", "")
+JOOBLE_KEY        = CFG.get("jooble_api_key", "")
+JOOBLE_KEY_BACKUP = CFG.get("jooble_api_key_backup", "")
 ADZUNA_ID   = CFG.get("adzuna_app_id", "")
 ADZUNA_KEY  = CFG.get("adzuna_app_key", "")
 
@@ -211,47 +212,71 @@ def fetch_remotive():
 # ─────────────────────────────────────────
 # SOURCE 3 — Jooble (grátis com API key)
 # ─────────────────────────────────────────
+def _jooble_request(key, params):
+    payload = json.dumps({**params, "page": 1}).encode()
+    return fetch_json(
+        f"https://jooble.org/api/{key}",
+        headers={"Content-Type": "application/json"},
+        data=payload,
+        method="POST"
+    )
+
 def fetch_jooble():
-    if not JOOBLE_KEY:
+    if not JOOBLE_KEY and not JOOBLE_KEY_BACKUP:
         print("⏭  Jooble — sem API key, pulando")
         return []
     print("🔍 Jooble...")
     try:
-        payload = json.dumps({"keywords": "freelance remote", "location": "", "page": 1}).encode()
-        data = fetch_json(
-            f"https://jooble.org/api/{JOOBLE_KEY}",
-            headers={"Content-Type": "application/json"},
-            data=payload,
-            method="POST"
-        )
+        searches = [
+            {"keywords": "freelance remote", "location": ""},
+            {"keywords": "freelancer remoto", "location": "Brasil"},
+            {"keywords": "desenvolvedor freelancer", "location": "Brasil"},
+        ]
         jobs = []
-        for item in data.get("jobs", []):
-            title    = item.get("title", "")
-            desc     = strip_html(item.get("snippet", ""))[:600]
-            company  = item.get("company", "—")
-            date_val = item.get("updated", "")
-            salary   = item.get("salary", "") or ""
-            tags     = [t.strip() for t in title.split() if len(t) > 3][:5]
-            jobs.append({
-                "id":        job_id("jooble", item.get("id","")),
-                "title":     title,
-                "company":   company,
-                "category":  categorize([], title, desc),
-                "type":      "freela",
-                "desc":      desc,
-                "req":       "Ver descrição completa",
-                "details":   f"Fonte: Jooble · {item.get('location','Global')}",
-                "contact":   item.get("link", ""),
-                "pay":       salary if salary else "A combinar",
-                "payNum":    0,
-                "payPeriod": "combinado",
-                "tags":      tags,
-                "location":  item.get("location", "Remoto") or "Remoto",
-                "urgency":   urgency(date_val),
-                "avatar":    avatar(company),
-                "posted":    ago(date_val),
-                "source":    "Jooble"
-            })
+        seen = set()
+        for params in searches:
+            try:
+                # Tenta key principal; cai na backup se der erro
+                try:
+                    data = _jooble_request(JOOBLE_KEY, params)
+                except Exception as e1:
+                    if JOOBLE_KEY_BACKUP:
+                        print(f"   ⚠ Key principal falhou ({e1}), usando backup...")
+                        data = _jooble_request(JOOBLE_KEY_BACKUP, params)
+                    else:
+                        raise
+                for item in data.get("jobs", []):
+                    jid = item.get("id", "")
+                    if jid in seen: continue
+                    seen.add(jid)
+                    title    = item.get("title", "")
+                    desc     = strip_html(item.get("snippet", ""))[:600]
+                    company  = item.get("company", "—")
+                    date_val = item.get("updated", "")
+                    salary   = item.get("salary", "") or ""
+                    tags     = [t.strip() for t in title.split() if len(t) > 3][:5]
+                    jobs.append({
+                        "id":        job_id("jooble", jid),
+                        "title":     title,
+                        "company":   company,
+                        "category":  categorize([], title, desc),
+                        "type":      "freela",
+                        "desc":      desc,
+                        "req":       "Ver descrição completa",
+                        "details":   f"Fonte: Jooble · {item.get('location','Global')}",
+                        "contact":   item.get("link", ""),
+                        "pay":       salary if salary else "A combinar",
+                        "payNum":    0,
+                        "payPeriod": "combinado",
+                        "tags":      tags,
+                        "location":  item.get("location", "Remoto") or "Remoto",
+                        "urgency":   urgency(date_val),
+                        "avatar":    avatar(company),
+                        "posted":    ago(date_val),
+                        "source":    "Jooble"
+                    })
+            except Exception as e:
+                print(f"   ⚠ Jooble query '{params['keywords']}': {e}")
         print(f"   ✓ {len(jobs)} vagas")
         return jobs
     except Exception as e:
@@ -316,6 +341,68 @@ def fetch_adzuna():
         return []
 
 # ─────────────────────────────────────────
+# SOURCE 5 — Freelancer.com (grátis, sem auth, global + BR)
+# ─────────────────────────────────────────
+def fetch_freelancer():
+    print("🔍 Freelancer.com...")
+    try:
+        # Busca projetos ativos em português e inglês
+        urls = [
+            "https://www.freelancer.com/api/projects/0.1/projects/active/?limit=50&job_details=true&languages[]=pt",
+            "https://www.freelancer.com/api/projects/0.1/projects/active/?limit=50&job_details=true&languages[]=en",
+        ]
+        jobs = []
+        seen = set()
+        for url in urls:
+            try:
+                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=15) as r:
+                    data = json.loads(r.read())
+                projects = data.get("result", {}).get("projects", [])
+                for item in projects:
+                    pid = item.get("id", "")
+                    if pid in seen: continue
+                    seen.add(pid)
+                    title     = item.get("title", "")
+                    desc      = strip_html(item.get("preview_description", ""))[:600]
+                    budget    = item.get("budget", {}) or {}
+                    pay_min   = budget.get("minimum", 0) or 0
+                    pay_max   = budget.get("maximum", 0) or 0
+                    currency  = item.get("currency", {}).get("sign", "$") or "$"
+                    pay_txt   = f"{currency}{pay_min:,.0f}–{currency}{pay_max:,.0f}" if pay_min else "A combinar"
+                    jobs_list = item.get("jobs", []) or []
+                    tags      = [j.get("name","") for j in jobs_list if j.get("name")][:5]
+                    date_val  = item.get("time_submitted", "")
+                    country   = item.get("language", "").upper() or "Global"
+                    jobs.append({
+                        "id":        job_id("freelancer", pid),
+                        "title":     title,
+                        "company":   "Freelancer.com",
+                        "category":  categorize(tags, title, desc),
+                        "type":      "freela",
+                        "desc":      desc or "Ver descrição completa no link.",
+                        "req":       ", ".join(tags) if tags else "Ver descrição",
+                        "details":   f"Fonte: Freelancer.com · {country}",
+                        "contact":   f"https://www.freelancer.com/projects/{item.get('seo_url','')}",
+                        "pay":       pay_txt,
+                        "payNum":    pay_min,
+                        "payPeriod": "projeto",
+                        "tags":      tags,
+                        "location":  "Remoto",
+                        "urgency":   urgency(date_val),
+                        "avatar":    avatar("Freelancer"),
+                        "posted":    ago(date_val),
+                        "source":    "Freelancer"
+                    })
+            except Exception as e:
+                print(f"   ⚠ {e}")
+        print(f"   ✓ {len(jobs)} vagas")
+        return jobs
+    except Exception as e:
+        print(f"   ✗ Erro: {e}")
+        return []
+
+# ─────────────────────────────────────────
 # GITHUB PUSH
 # ─────────────────────────────────────────
 def push_to_github(payload):
@@ -370,9 +457,10 @@ def main():
 
     # 1. Busca todas as fontes
     all_jobs = (
-        fetch_remoteok() +
-        fetch_remotive() +
-        fetch_jooble()   +
+        fetch_remoteok()   +
+        fetch_remotive()   +
+        fetch_freelancer() +
+        fetch_jooble()     +
         fetch_adzuna()
     )
     print(f"\n📦 Total bruto: {len(all_jobs)} vagas")
