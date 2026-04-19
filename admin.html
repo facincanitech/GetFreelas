@@ -339,6 +339,22 @@
 // CONFIG (salvo em localStorage do admin)
 // =====================================================
 const CFG_KEY = 'gf_admin_cfg';
+const SB_URL  = 'https://ymuwmxdtyyizofargqbc.supabase.co';
+const SB_KEY  = 'sb_publishable_TBBNniRZ-7GywxssdmXP6Q_E2kJtdtZ';
+
+async function sbGet(table, params='') {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}&order=created_at.desc`, {
+    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
+  });
+  return r.json();
+}
+async function sbUpdate(table, id, data) {
+  await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+}
 
 const DEFAULTS = {
   token:    '',
@@ -465,11 +481,10 @@ async function loadIssues() {
   const localJobs  = loadLocalJobs();
   allIssues = [...localUsers, ...localJobs];
 
-  // Carrega empresas do servidor local (via POST do site)
+  // Carrega empresas do Supabase
   try {
-    const r = await fetch(`${SCRAPER_URL}/empresas`, { signal: AbortSignal.timeout(2000) });
-    const d = await r.json();
-    const serverEmpresas = (d.empresas || []).map((u, i) => {
+    const empresas = await sbGet('empresas');
+    const sbEmpresas = (empresas || []).map((u, i) => {
       const labels = [{ name: 'empresa' }];
       if (u.status === 'pendente') labels.push({ name: 'pendente' });
       else if (u.status === 'verificado') labels.push({ name: 'verificado' });
@@ -479,17 +494,13 @@ async function loadIssues() {
         title: '🏢 Nova empresa: ' + u.name,
         state: u.status === 'pendente' ? 'open' : 'closed',
         labels,
-        created_at: u.createdAt || u.receivedAt || new Date().toISOString(),
+        created_at: u.created_at || new Date().toISOString(),
         body: `**Email:** ${u.email}\n**CNPJ:** ${u.cnpj}\n**Tel:** ${u.tel}\n**Área:** ${u.area}\n**Endereço:** ${u.endereco}, ${u.cidade} - ${u.estado}`,
-        _serverData: u,
-        _serverIdx: i
+        _sbData: u
       };
     });
-    // Evita duplicatas por email com os do localStorage
-    const localEmails = new Set(localUsers.map(i => i.body?.match(/\*\*Email:\*\* (.+)/)?.[1]?.trim()));
-    const novas = serverEmpresas.filter(i => !localEmails.has(i._serverData?.email));
-    allIssues = [...allIssues, ...novas];
-  } catch(e) { /* servidor offline */ }
+    allIssues = [...allIssues, ...sbEmpresas];
+  } catch(e) { console.warn('Supabase:', e); }
 
   const c = getCfg();
   if (c.token && c.repo) {
@@ -706,7 +717,8 @@ async function updateServerEmpresa(idx, status) {
 
 async function verifyEmpresa(num) {
   if (num >= 70000 && num < 80000) {
-    await updateServerEmpresa(num - 70000, 'verificado');
+    const issue = allIssues.find(i => i.number === num);
+    if (issue?._sbData?.id) await sbUpdate('empresas', issue._sbData.id, { status: 'verificado' });
     toast('✓ Empresa verificada!', 'ok');
     loadIssues();
     return;
@@ -735,7 +747,8 @@ async function verifyEmpresa(num) {
 async function rejectEmpresa(num) {
   if (!confirm('Rejeitar esta empresa?')) return;
   if (num >= 70000 && num < 80000) {
-    await updateServerEmpresa(num - 70000, 'rejeitado');
+    const issue = allIssues.find(i => i.number === num);
+    if (issue?._sbData?.id) await sbUpdate('empresas', issue._sbData.id, { status: 'rejeitado' });
     toast('Empresa rejeitada.', 'err');
     loadIssues();
     return;
@@ -817,7 +830,7 @@ function showIssueDetail(num) {
 
   // Para cadastros locais (número >= 90000), mostra dados completos do user
   let extraHtml = '';
-  const serverData = num >= 70000 && num < 80000 ? issue._serverData : null;
+  const serverData = num >= 70000 && num < 80000 ? issue._sbData : null;
   const u = serverData || (num >= 90000 ? (JSON.parse(localStorage.getItem('gf_users')||'[]'))[num - 90000] : null);
   if (u && (u.type === 'empresa' || serverData)) {
       extraHtml = `

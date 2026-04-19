@@ -481,6 +481,16 @@
 // =====================================================
 const ADMIN_EMAIL   = 'pezzarine@gmail.com';
 const CONTACT_EMAIL = 'facincanitech@gmail.com';
+const SB_URL  = 'https://ymuwmxdtyyizofargqbc.supabase.co';
+const SB_KEY  = 'sb_publishable_TBBNniRZ-7GywxssdmXP6Q_E2kJtdtZ';
+
+async function sbInsert(table, data) {
+  await fetch(`${SB_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+    body: JSON.stringify(data)
+  });
+}
 
 // =====================================================
 // STATE
@@ -600,12 +610,8 @@ async function doEmpresaRegister() {
     `Nova empresa para verificar: ${nome}`,
     `Razão Social: ${nome}\nCNPJ: ${cnpj}\nEmail: ${email}\nTelefone: ${tel}\nÁrea: ${area}\nEndereço: ${endereco}, ${cidade} - ${estado}\nData: ${new Date().toLocaleString('pt-BR')}\n\nAbra o admin.html para verificar.`
   );
-  // Tenta enviar pro servidor local (admin) — silencioso se offline
-  fetch('http://localhost:8765/register', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: nome, cnpj, email, tel, area, endereco, cidade, estado, status: 'pendente', createdAt: new Date().toISOString() })
-  }).catch(() => {});
+  // Salva no Supabase
+  sbInsert('empresas', { name: nome, cnpj, email, tel, area, endereco, cidade, estado, status: 'pendente' }).catch(() => {});
   closeModal('empresaModal');
   updateAuthUI();
   render();
